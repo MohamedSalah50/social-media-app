@@ -1,23 +1,40 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.userModel = void 0;
+exports.UserModel = void 0;
 const mongoose_1 = require("mongoose");
 // import { Document, HydratedDocument } from "mongoose";
-// export interface IUser extends Document {
-//     username: string;
-//     email: string;
-//     password: string;
-//     phone: string;
-//     confirmHashedOtp?: string;
-//     isEmailVerified: boolean;
-// }
-// export type UserDocument = HydratedDocument<IUser>;
+var GenderEnum;
+(function (GenderEnum) {
+    GenderEnum["male"] = "male";
+    GenderEnum["female"] = "female";
+})(GenderEnum || (GenderEnum = {}));
+var RoleEnum;
+(function (RoleEnum) {
+    RoleEnum["user"] = "user";
+    RoleEnum["admin"] = "admin";
+})(RoleEnum || (RoleEnum = {}));
 const userSchema = new mongoose_1.Schema({
-    username: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
+    firstName: { type: String, required: true, minLength: 2, maxLength: 20 },
+    lastName: { type: String, required: true, minLength: 2, maxLength: 20 },
+    email: { type: String, unique: true, required: true },
+    confirmEmailOtp: { type: String },
+    confirmedAt: { type: Date },
     password: { type: String, required: true },
-    phone: { type: String, required: true },
-    confirmHashedOtp: { type: String },
-    isEmailVerified: { type: Boolean, default: false }
-}, { timestamps: true });
-exports.userModel = mongoose_1.models.User || (0, mongoose_1.model)("User", userSchema);
+    resetPasswordOtp: { type: String },
+    changeCredentialsTime: { type: Date },
+    phone: { type: String },
+    address: { type: String },
+    gender: { type: String, enum: GenderEnum, default: GenderEnum.male },
+    role: { type: String, enum: RoleEnum, default: RoleEnum.user },
+}, {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+});
+userSchema.virtual("username").set(function (value) {
+    const [firstName, lastName] = value.split(" ") || [];
+    this.set({ firstName, lastName });
+}).get(function () {
+    return this.firstName + " " + this.lastName;
+});
+exports.UserModel = mongoose_1.models.User || (0, mongoose_1.model)("User", userSchema);

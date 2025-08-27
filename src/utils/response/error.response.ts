@@ -22,6 +22,12 @@ export class BadRequest extends AppError {
     }
 }
 
+export class conflict extends AppError {
+    constructor(message: string, cause?: unknown) {
+        super(message, 409, cause)
+    }
+}
+
 
 export const globalErrorHandling = (error: IError, req: Request, res: Response, next: NextFunction) => {
     return res.status(error.statusCode || 500).json({ error_message: error.message || "something went wrong !", stack: process.env.MOOD === "development" ? error.stack : undefined, cause: error.cause })

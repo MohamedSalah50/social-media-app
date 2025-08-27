@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.globalErrorHandling = exports.BadRequest = exports.AppError = void 0;
+exports.globalErrorHandling = exports.conflict = exports.BadRequest = exports.AppError = void 0;
 class AppError extends Error {
     message;
     statusCode;
@@ -21,6 +21,12 @@ class BadRequest extends AppError {
     }
 }
 exports.BadRequest = BadRequest;
+class conflict extends AppError {
+    constructor(message, cause) {
+        super(message, 409, cause);
+    }
+}
+exports.conflict = conflict;
 const globalErrorHandling = (error, req, res, next) => {
     return res.status(error.statusCode || 500).json({ error_message: error.message || "something went wrong !", stack: process.env.MOOD === "development" ? error.stack : undefined, cause: error.cause });
 };

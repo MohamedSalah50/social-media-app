@@ -1,15 +1,7 @@
-export interface ISignupBodyInputs {
-    username: string,
-    email: string,
-    password: string,
-    phone: string
-}
-export interface IConfirmEmailInputs {
-    email: string,
-    otp: string
-}
+import z from "zod";
+import * as validators from "../auth.validation";
 
-export interface ILoginBodyInputs {
-    email: string,
-    password: string
-}
+export type ISignupBodyInputs = z.infer<typeof validators.signup.body>
+export type IConfirmEmailInputs = z.infer<typeof validators.confirmEmail.body>
+
+export type ILoginBodyInputs = z.infer<typeof validators.login.body>

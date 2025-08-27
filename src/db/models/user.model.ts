@@ -1,30 +1,61 @@
-import { Schema, model, models, InferSchemaType } from "mongoose";
+import { Schema, model, models, Types } from "mongoose";
 // import { Document, HydratedDocument } from "mongoose";
 
-// export interface IUser extends Document {
-//     username: string;
-//     email: string;
-//     password: string;
-//     phone: string;
-//     confirmHashedOtp?: string;
-//     isEmailVerified: boolean;
-// }
+enum GenderEnum {
+    male = "male",
+    female = "female"
+}
 
-// export type UserDocument = HydratedDocument<IUser>;
+enum RoleEnum {
+    user = "user",
+    admin = "admin"
+}
 
-const userSchema = new Schema(
-    {
-        username: { type: String, required: true },
-        email: { type: String, required: true, unique: true },
-        password: { type: String, required: true },
-        phone: { type: String, required: true },
-        confirmHashedOtp: { type: String },
-        isEmailVerified: { type: Boolean, default: false }
-    },
-    { timestamps: true }
-);
+export interface IUser {
+    _id: Types.ObjectId;
+    firstName: string;
+    lastName: string;
+    username?: string;
+    email: string;
+    confirmEmailOtp?: string;
+    confirmedAt?: Date;
+    password: string;
+    resetPasswordOtp?: string;
+    changeCredentialsTime?: Date;
+    phone: string;
+    address?: string;
+    gender?: GenderEnum;
+    role?: RoleEnum;
+    createdAt: Date;
+    updatedAt?: Date;
+}
 
-export type IUser = InferSchemaType<typeof userSchema>;
+const userSchema = new Schema<IUser>({
+    firstName: { type: String, required: true, minLength: 2, maxLength: 20 },
+    lastName: { type: String, required: true, minLength: 2, maxLength: 20 },
+    email: { type: String, unique: true, required: true },
+    confirmEmailOtp: { type: String },
+    confirmedAt: { type: Date },
+    password: { type: String, required: true },
+    resetPasswordOtp: { type: String },
+    changeCredentialsTime: { type: Date },
+    phone: { type: String },
+    address: { type: String },
+    gender: { type: String, enum: GenderEnum, default: GenderEnum.male },
+    role: { type: String, enum: RoleEnum, default: RoleEnum.user },
+}, {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true } 
+})
+
+userSchema.virtual("username").set(function (value: string) {
+    const [firstName, lastName] = value.split(" ") || [];
+    this.set({ firstName, lastName })
+}).get(function () {
+    return this.firstName + " " + this.lastName
+})
 
 
-export const userModel = models.User || model<IUser>("User", userSchema);
+
+export const UserModel = models.User || model<IUser>("User", userSchema);

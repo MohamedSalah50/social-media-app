@@ -1,39 +1,39 @@
 import { Request, Response } from "express";
-import { userModel } from "../../db/models/user.model";
-import { compareHash, generateHash } from "../../utils/security/hash.security";
-import { generateEncryption } from "../../utils/security/encryption.security";
-import { IConfirmEmailInputs, ILoginBodyInputs, ISignupBodyInputs } from "./dto/auth.dto";
-import { emailEmitter } from "../../utils/events/email.event";
-import { otpEmailTemplate } from "../../utils/email/template.email";
-import { AppError } from "../../utils/response/error.response";
+import { UserModel } from "../../db/models/user.model";
+// import { compareHash, generateHash } from "../../utils/security/hash.security";
+// import { generateEncryption } from "../../utils/security/encryption.security";
+// import { IConfirmEmailInputs, ILoginBodyInputs, ISignupBodyInputs } from "./dto/auth.dto";
+// import { emailEmitter } from "../../utils/events/email.event";
+// import { otpEmailTemplate } from "../../utils/email/template.email";
+// import { AppError } from "../../utils/response/error.response";
+// import { generateToken } from "../../utils/security/token.security";
+import { ILoginBodyInputs, ISignupBodyInputs } from "./dto/auth.dto";
+import { userRepository } from "../../db/repository/user.repository";
+import { AppError, BadRequest, conflict } from "../../utils/response/error.response";
+import { compareHash } from "../../utils/security/hash.security";
 import { generateToken } from "../../utils/security/token.security";
-// const nanoid = require("nanoid");
-// import { nanoid } from "nanoid";
+
 
 class AuthenticationService {
+
+    private userModel = new userRepository(UserModel);
+
     signup = async (req: Request, res: Response): Promise<Response> => {
 
-        const { username, email, password, phone }: ISignupBodyInputs = req.body;
+        const { username, email, password }: ISignupBodyInputs = req.body;
 
-        const exsistingUser = await userModel.findOne({ email })
+        const existUser = await this.userModel.findOne({ filter: { email } });
 
-        if (exsistingUser) {
-            throw new AppError("user already exists", 400)
+        if (existUser) {
+            throw new conflict("user already exist")
         }
 
 
-        const hashedPassword = generateHash({ plainText: password })
-        const encryptedPhone = generateEncryption({ plainText: phone })
+        // const hashedPassword = generateHash({ plainText: password })
 
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        const hashedOtp = generateHash({ plainText: otp })
+        const [user] = await this.userModel.create({ data: [{ username, email, password }], options: { validateBeforeSave: true } }) || [];
 
-        // const user = await userModel.create({ username, email, password, phone });
-        //ال create عماله تجيبلي typeError مش عارف ليه فاستحدمت insertOne , بس هيا شغاله يعني ك logic واليوزر بينضاف عادي ف ال database
-
-        const user = await userModel.insertOne({ username, email, password: hashedPassword, phone: encryptedPhone, confirmHashedOtp: hashedOtp });
-
-        emailEmitter.emit("sendConfirmEmail", { to: email, subject: "confirm your email", html: otpEmailTemplate({ otp, title: "confirm your email" }) });
+        // emailEmitter.emit("sendConfirmEmail", { to: email, subject: "confirm your email", html: otpEmailTemplate({ otp, title: "confirm your email" }) });
 
         return res.status(201).json({ message: "signup successful", data: user });
     };
@@ -43,14 +43,14 @@ class AuthenticationService {
 
         const { email, password }: ILoginBodyInputs = req.body;
 
-        const user = await userModel.findOne({ email });
+        const user = await this.userModel.findOne({ filter: { email } });
 
         if (!user) {
-            throw new AppError("user not found", 400)
+            throw new BadRequest("user not found")
         }
 
-        if (!user.isEmailVerified) {
-            throw new AppError("email not verified , please confirm your email first", 400)
+        if (!user.confirmedAt) {
+            throw new BadRequest("email not verified , please confirm your email first")
         }
 
         const matched = await compareHash({ plainText: password, cipherText: user.password })
@@ -68,25 +68,25 @@ class AuthenticationService {
     };
 
 
-    confirmEmail = async (req: Request, res: Response): Promise<Response> => {
-        const { otp, email }: IConfirmEmailInputs = req.body;
+    // confirmEmail = async (req: Request, res: Response): Promise<Response> => {
+    //     const { otp, email }: IConfirmEmailInputs = req.body;
 
-        const user = await userModel.findOne({ email })
+    //     const user = await this.userModel.findOne({ filter: { email } });
 
-        if (!user) {
-            throw new AppError("user not found", 400)
-        }
+    //     if (!user) {
+    //         throw new BadRequest("user not found")
+    //     }
 
-        const matched = await compareHash({ plainText: otp, cipherText: user.confirmHashedOtp })
+    //     const matched = await compareHash({ plainText: otp, cipherText: user.confirmHashedOtp })
 
-        if (!matched) {
-            throw new AppError("invalid otp", 400)
-        }
+    //     if (!matched) {
+    //         throw new AppError("invalid otp", 400)
+    //     }
 
-        await userModel.updateOne({ email }, { $unset: { confirmHashedOtp: "" }, $set: { isEmailVerified: true } })
+    //     await this.userModel.updateOne({ email }, { $unset: { confirmHashedOtp: "" }, $set: { isEmailVerified: true } })
 
-        return res.status(200).json({ message: "email confirmed 🎉" });
-    }
+    //     return res.status(200).json({ message: "email confirmed 🎉" });
+    // }
 
 }
 
