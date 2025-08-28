@@ -1,44 +1,27 @@
-import nodemailer from "nodemailer";
+import nodemailer, { Transporter } from "nodemailer";
+import SMTPTransport from "nodemailer/lib/smtp-transport";
+import Mail from "nodemailer/lib/mailer";
+import { BadRequest } from "../response/error.response";
 
-interface EmailOptions {
-    from?: string;
-    to: string | string[];
-    cc?: string | string[];
-    bcc?: string | string[];
-    subject: string;
-    text?: string;
-    html?: string;
-    attachments?: any[];
-}
+export const sendEmail = async (data: Mail.Options): Promise<void> => {
 
-export const sendEmail = async ({
-    from = process.env.EMAIL,
-    to,
-    cc = [],
-    bcc = [],
-    subject,
-    text = "",
-    html = "",
-    attachments = [],
-}: EmailOptions) => {
-    const transporter = nodemailer.createTransport({
+    if (!data.html && !data.attachments?.length && !data.text) {
+        throw new BadRequest("missing email content")
+    }
+    const transporter: Transporter<
+        SMTPTransport.SentMessageInfo | SMTPTransport.Options
+    > = nodemailer.createTransport({
         service: "gmail",
         auth: {
-            user: process.env.EMAIL,
-            pass: process.env.EMAIL_PASSWORD,
+            user: process.env.EMAIL as string,
+            pass: process.env.EMAIL_PASSWORD as string,
         },
     });
 
     await transporter.sendMail({
-        from: `MyApp <${from}>`,
-        to,
-        cc,
-        bcc,
-        subject,
-        text,
-        html,
-        attachments,
+        ...data,
+        from: `${process.env.APPLICATION_NAME} 🍀🚀 <${process.env.EMAIL as string}>`,
     });
 
-    // console.log("✅ Email sent:", info.messageId);
+    // console.log("Message sent:", info.messageId);
 };

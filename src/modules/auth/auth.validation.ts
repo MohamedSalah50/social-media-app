@@ -30,6 +30,6 @@ export const signup = {
 export const confirmEmail = {
     body: z.strictObject({
         email: generalFields.email,
-        otp: z.string()
+        otp: generalFields.otp
     })
 }

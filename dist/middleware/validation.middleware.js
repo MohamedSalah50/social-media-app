@@ -34,5 +34,6 @@ exports.generalFields = {
     email: zod_1.default.email(),
     password: zod_1.default.string().regex(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/),
     confirmPassword: zod_1.default.string(),
-    phone: zod_1.default.string()
+    phone: zod_1.default.string(),
+    otp: zod_1.default.string().regex(/^\d{6}$/)
 };

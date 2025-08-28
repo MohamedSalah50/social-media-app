@@ -8,6 +8,6 @@ const router = Router();
 
 router.post("/signup", validation(authValidation.signup), AuthenticationService.signup)
 router.post("/login", validation(authValidation.login), AuthenticationService.login)
-// router.post("/confirmEmail", validation(authValidation.confirmEmail), AuthenticationService.confirmEmail)
+router.post("/confirmEmail", validation(authValidation.confirmEmail), AuthenticationService.confirmEmail)
 
 export default router

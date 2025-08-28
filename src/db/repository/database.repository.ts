@@ -1,4 +1,5 @@
-import { FlattenMaps, QueryOptions } from "mongoose";
+import { FlattenMaps, QueryOptions, UpdateQuery, UpdateWriteOpResult } from "mongoose";
+import { MongooseUpdateQueryOptions } from "mongoose";
 import { ProjectionType } from "mongoose";
 import { CreateOptions, HydratedDocument, Model, RootFilterQuery } from "mongoose";
 
@@ -20,6 +21,18 @@ export abstract class DatabaseRepository<TDocument> {
             doc.lean(options.lean)
         }
         return await doc.exec();
+    }
+
+    async updateOne({ filter, update, options }: {
+        filter: RootFilterQuery<TDocument>,
+        update: UpdateQuery<TDocument>,
+        options?: MongooseUpdateQueryOptions<TDocument> | null
+    }): Promise<UpdateWriteOpResult> {
+        return await this.model.updateOne(filter, {
+            ...update, $inc: {
+                __v: 1
+            }
+        }, options)
     }
 
 }

@@ -43,5 +43,5 @@ const authValidation = __importStar(require("./auth.validation"));
 const router = (0, express_1.Router)();
 router.post("/signup", (0, validation_middleware_1.validation)(authValidation.signup), auth_service_1.default.signup);
 router.post("/login", (0, validation_middleware_1.validation)(authValidation.login), auth_service_1.default.login);
-// router.post("/confirmEmail", validation(authValidation.confirmEmail), AuthenticationService.confirmEmail)
+router.post("/confirmEmail", (0, validation_middleware_1.validation)(authValidation.confirmEmail), auth_service_1.default.confirmEmail);
 exports.default = router;

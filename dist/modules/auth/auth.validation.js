@@ -26,6 +26,6 @@ exports.signup = {
 exports.confirmEmail = {
     body: zod_1.z.strictObject({
         email: validation_middleware_1.generalFields.email,
-        otp: zod_1.z.string()
+        otp: validation_middleware_1.generalFields.otp
     })
 };

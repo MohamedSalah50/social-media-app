@@ -16,5 +16,12 @@ class DatabaseRepository {
         }
         return await doc.exec();
     }
+    async updateOne({ filter, update, options }) {
+        return await this.model.updateOne(filter, {
+            ...update, $inc: {
+                __v: 1
+            }
+        }, options);
+    }
 }
 exports.DatabaseRepository = DatabaseRepository;

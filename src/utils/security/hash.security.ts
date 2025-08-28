@@ -1,27 +1,10 @@
-import bcrypt from "bcryptjs";
+import { compare, hash } from "bcrypt";
 
-interface IHashInput {
-  plainText?: string;
-  saltRound?: number;
+export const generateHash = async (plainText: string, saltRound: number = Number(process.env.SALT_ROUND)): Promise<string> => {
+  return await hash(plainText, saltRound);
 }
-
-interface ICompareInput {
-  plainText?: string;
-  cipherText?: string;
-}
-
-// Hash
-export const generateHash = ({
-  plainText = "",
-  saltRound = Number(process.env.SALT_ROUND) || 10,
-}: IHashInput): string => {
-  return bcrypt.hashSync(plainText, saltRound);
-};
 
 // Compare Hash
-export const compareHash = async ({
-  plainText = "",
-  cipherText = "",
-}: ICompareInput): Promise<boolean> => {
-  return bcrypt.compare(plainText, cipherText);
-};
+export const compareHash = async (plainText: string, cipherText: string): Promise<boolean> => {
+  return await compare(plainText, cipherText)
+}
