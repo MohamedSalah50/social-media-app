@@ -7,6 +7,7 @@ import type { Express, Request, Response, NextFunction } from "express";
 import express from "express";
 import cors from "cors";
 import authController from "./modules/auth/auth.controller";
+import userController from "./modules/user/user.controller";
 import { globalErrorHandling } from "./utils/response/error.response";
 import { connectDb } from "./db/connection.db";
 
@@ -24,6 +25,7 @@ const bootstrap = async (): Promise<void> => {
     })
 
     app.use("/auth", authController);
+    app.use("/user", userController);
 
     app.use(globalErrorHandling)
 

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.globalErrorHandling = exports.notFoundException = exports.conflict = exports.BadRequest = exports.AppError = void 0;
+exports.globalErrorHandling = exports.ForbiddenException = exports.UnAuthorizedException = exports.notFoundException = exports.conflict = exports.BadRequest = exports.AppError = void 0;
 class AppError extends Error {
     message;
     statusCode;
@@ -33,6 +33,18 @@ class notFoundException extends AppError {
     }
 }
 exports.notFoundException = notFoundException;
+class UnAuthorizedException extends AppError {
+    constructor(message, cause) {
+        super(message, 401, cause);
+    }
+}
+exports.UnAuthorizedException = UnAuthorizedException;
+class ForbiddenException extends AppError {
+    constructor(message, cause) {
+        super(message, 403, cause);
+    }
+}
+exports.ForbiddenException = ForbiddenException;
 const globalErrorHandling = (error, req, res, next) => {
     return res.status(error.statusCode || 500).json({ error_message: error.message || "something went wrong !", stack: process.env.MOOD === "development" ? error.stack : undefined, cause: error.cause });
 };
