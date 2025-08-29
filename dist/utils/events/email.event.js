@@ -17,6 +17,8 @@ exports.emailEmitter.on("sendConfirmEmail", async (data) => {
 });
 exports.emailEmitter.on("forgotPassword", async (data) => {
     try {
+        data.subject = "forgot-password";
+        data.html = (0, template_email_1.verifyEmail)({ otp: data.otp, title: "reset your password" });
         await (0, send_email_1.sendEmail)(data);
     }
     catch (err) {

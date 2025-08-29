@@ -11,6 +11,11 @@ enum RoleEnum {
     admin = "admin"
 }
 
+export enum ProviderEnum {
+    Google = "Google",
+    System = "System"
+}
+
 export interface IUser {
     _id: Types.ObjectId;
     firstName: string;
@@ -23,11 +28,13 @@ export interface IUser {
     resetPasswordOtp?: string;
     changeCredentialsTime?: Date;
     phone: string;
+    profileImage?: string;
     address?: string;
     gender?: GenderEnum;
     role?: RoleEnum;
     createdAt: Date;
     updatedAt?: Date;
+    provider?: ProviderEnum
 }
 
 const userSchema = new Schema<IUser>({
@@ -36,13 +43,19 @@ const userSchema = new Schema<IUser>({
     email: { type: String, unique: true, required: true },
     confirmEmailOtp: { type: String },
     confirmedAt: { type: Date },
-    password: { type: String, required: true },
+    password: {
+        type: String, required: function () {
+            return this.provider === ProviderEnum.Google ? false : true
+        }
+    },
     resetPasswordOtp: { type: String },
     changeCredentialsTime: { type: Date },
+    profileImage: { type: String },
     phone: { type: String },
     address: { type: String },
     gender: { type: String, enum: GenderEnum, default: GenderEnum.male },
     role: { type: String, enum: RoleEnum, default: RoleEnum.user },
+    provider: { type: String, enum: ProviderEnum, default: ProviderEnum.System },
 }, {
     timestamps: true,
     toJSON: { virtuals: true },

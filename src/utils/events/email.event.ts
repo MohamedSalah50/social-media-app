@@ -21,6 +21,8 @@ emailEmitter.on("sendConfirmEmail", async (data: IEmail) => {
 
 emailEmitter.on("forgotPassword", async (data) => {
   try {
+    data.subject = "forgot-password";
+    data.html = verifyEmail({ otp: data.otp, title: "reset your password" })
     await sendEmail(data);
   } catch (err) {
     console.error("❌ email failed:", err);
