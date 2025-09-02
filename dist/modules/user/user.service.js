@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const user_model_1 = require("../../db/models/user.model");
 const token_security_1 = require("../../utils/security/token.security");
 const user_repository_1 = require("../../db/repository/user.repository");
+const s3_config_1 = require("../../utils/multer/s3.config");
 class UserService {
     userModel = new user_repository_1.userRepository(user_model_1.UserModel);
     // private tokenModel = new TokenRepository(TokenModel);
@@ -12,6 +13,14 @@ class UserService {
             message: "user profile", data: {
                 user: req.user?._id,
                 decoded: req.decoded?.iat
+            }
+        });
+    };
+    profileImage = async (req, res) => {
+        const key = await (0, s3_config_1.uploadFile)({ file: req.file, path: `users/${req.decoded?._id}` });
+        return res.json({
+            message: "profile-image", data: {
+                key
             }
         });
     };

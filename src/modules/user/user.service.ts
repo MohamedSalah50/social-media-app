@@ -8,6 +8,7 @@ import { userRepository } from "../../db/repository/user.repository";
 // import { TokenModel } from "../../db/models/token.model";
 // import { ILogoutDto } from "./user.dto";
 import { JwtPayload } from "jsonwebtoken";
+import { uploadFile } from "../../utils/multer/s3.config";
 
 class UserService {
     private userModel = new userRepository(UserModel);
@@ -21,6 +22,17 @@ class UserService {
             }
         })
     }
+
+
+    profileImage = async (req: Request, res: Response): Promise<Response> => {
+        const key = await uploadFile({ file: req.file as Express.Multer.File, path: `users/${req.decoded?._id}` })
+        return res.json({
+            message: "profile-image", data: {
+                key
+            }
+        })
+    }
+
 
     logout = async (req: Request, res: Response): Promise<Response> => {
         const flag: LogOutEnum = req.body;
