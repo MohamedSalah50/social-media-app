@@ -180,7 +180,7 @@ export const uploadFiles = async ({
 export const createSignedUploadLink = async ({
   Bucket = process.env.S3_BUCKET_NAME as string,
   path = "general",
-  expiresIn = 120,
+  expiresIn = Number(process.env.AWS_PRE_SIGNED_URL_EXPIRES_IN_SECONDS),
   ContentType,
   OriginalName,
 }: {
@@ -189,7 +189,7 @@ export const createSignedUploadLink = async ({
   expiresIn?: number;
   ContentType: string;
   OriginalName: string;
-}): Promise<{ url: string; key: string }> => {
+}): Promise<{ url: string; Key: string }> => {
   const command = new PutObjectCommand({
     Bucket,
     Key: `${process.env.APPLICATION_NAME}/${path}/${uuid()}/_${OriginalName}`,
@@ -200,12 +200,12 @@ export const createSignedUploadLink = async ({
   if (!url || !command?.input?.Key) {
     throw new BadRequest("fail to create preSignedUrl");
   }
-  return { url, key: command.input.Key };
+  return { url, Key: command.input.Key };
 };
 
 export const createGetSignedLink = async ({
   Bucket = process.env.S3_BUCKET_NAME as string,
-  expiresIn = 120,
+  expiresIn = Number(process.env.AWS_PRE_SIGNED_URL_EXPIRES_IN_SECONDS),
   Key,
   downloadName = "dummy",
   download = "flase",

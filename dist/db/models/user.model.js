@@ -25,27 +25,41 @@ const userSchema = new mongoose_1.Schema({
     confirmEmailOtp: { type: String },
     confirmedAt: { type: Date },
     password: {
-        type: String, required: function () {
+        type: String,
+        required: function () {
             return this.provider === ProviderEnum.Google ? false : true;
-        }
+        },
     },
     resetPasswordOtp: { type: String },
     changeCredentialsTime: { type: Date },
     profileImage: { type: String },
+    tempProfileImage: { type: String },
+    coverImages: [String],
+    freezedAt: { type: Date },
+    freezedBy: { type: mongoose_1.Schema.Types.ObjectId, ref: "User" },
+    restoredAt: { type: Date },
+    restoredBy: { type: mongoose_1.Schema.Types.ObjectId, ref: "User" },
     phone: { type: String },
     address: { type: String },
     gender: { type: String, enum: GenderEnum, default: GenderEnum.male },
     role: { type: String, enum: RoleEnum, default: RoleEnum.user },
-    provider: { type: String, enum: ProviderEnum, default: ProviderEnum.System },
+    provider: {
+        type: String,
+        enum: ProviderEnum,
+        default: ProviderEnum.System,
+    },
 }, {
     timestamps: true,
     toJSON: { virtuals: true },
-    toObject: { virtuals: true }
+    toObject: { virtuals: true },
 });
-userSchema.virtual("username").set(function (value) {
+userSchema
+    .virtual("username")
+    .set(function (value) {
     const [firstName, lastName] = value.split(" ") || [];
     this.set({ firstName, lastName });
-}).get(function () {
+})
+    .get(function () {
     return this.firstName + " " + this.lastName;
 });
 exports.UserModel = mongoose_1.models.User || (0, mongoose_1.model)("User", userSchema);
