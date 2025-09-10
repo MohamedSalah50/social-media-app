@@ -27,12 +27,14 @@ import {
   UnAuthorizedException,
 } from "../../utils/response/error.response";
 import s3event from "../../utils/multer/s3.events";
-import { IFreezeAccountDto, IRestoreAccountDto, IUpdatePasswordDto } from "./user.dto";
+import { IConfirmUpdateEmail, IFreezeAccountDto, IRestoreAccountDto, IUpdateEmailDto, IUpdatePasswordDto } from "./user.dto";
 import { successResponse } from "../../utils/response/success.response";
 import { IUserResponse, IProfileImage } from "./user.entities";
 import { ILoginResponse } from "../auth/auth.entities";
 import { decryptEncryption, generateEncryption } from "../../utils/security/encryption.security";
 import { compareHash, generateHash } from "../../utils/security/hash.security";
+import { generateOtp } from "../../utils/otp";
+import { emailEmitter } from "../../utils/events/email.event";
 
 class UserService {
   private userModel = new userRepository(UserModel);
@@ -240,6 +242,54 @@ class UserService {
 
     return successResponse({ res, message: "password updated suuccessfully" })
   }
+
+
+  updateEmail = async (req: Request, res: Response) => {
+
+    const { oldEmail, email }: IUpdateEmailDto = req.body;
+
+    //handled in validation
+    if (email === oldEmail) {
+      throw new BadRequest("email is same as old email")
+    }
+
+    const otp = generateOtp();
+    console.log(otp);
+
+
+    await this.userModel.findOneAndUpdate({
+      filter: { _id: req?.user?._id },
+      update: { tempEmail: email, tempEmailOtp: await generateHash(String(otp)) }
+    })
+
+    emailEmitter.emit("sendConfirmEmail", { to: email, otp });
+
+
+    return successResponse({ res, message: "otp sent , please confirm your new email" })
+  }
+
+  confirmUpdateEmail = async (req: Request, res: Response) => {
+
+    const { otp }: IConfirmUpdateEmail = req.body;
+
+    const user = await this.userModel.findOne({ filter: { _id: req.user?._id } })
+
+    if (!user?.tempEmail || !user?.tempEmailOtp) {
+      throw new BadRequest("there's no pending email request")
+    }
+
+    if (!await compareHash(otp, user.tempEmailOtp)) {
+      throw new BadRequest("otp not match")
+    }
+
+    await this.userModel.findOneAndUpdate({
+      filter: { _id: req.user?._id },
+      update: { email: user.tempEmail, changeCredentialsTime: Date.now(), $unset: { tempEmail: 1, tempEmailOtp: 1 }, $inc: { __v: 1 } }
+    })
+
+    return successResponse({ res, message: "email updated successfully,please login again" })
+  }
+
 
 }
 

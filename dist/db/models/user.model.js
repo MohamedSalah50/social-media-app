@@ -48,6 +48,8 @@ const userSchema = new mongoose_1.Schema({
         enum: ProviderEnum,
         default: ProviderEnum.System,
     },
+    tempEmail: { type: String },
+    tempEmailOtp: { type: String }
 }, {
     timestamps: true,
     strictQuery: true,

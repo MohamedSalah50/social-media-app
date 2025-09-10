@@ -62,4 +62,6 @@ router.post("/refresh-token", (0, authentication_middleware_1.authentication)(to
 router.post("/logout", (0, authentication_middleware_1.authentication)(), (0, validation_middleware_1.validation)(validators.logout), user_service_1.default.logout);
 router.patch("/update-basic-info", (0, authentication_middleware_1.authentication)(), (0, validation_middleware_1.validation)(validators.updateBasicInfo), user_service_1.default.updateBasicInfo);
 router.patch("/update-password", (0, authentication_middleware_1.authentication)(), (0, validation_middleware_1.validation)(validators.updatePassword), user_service_2.default.updatePassword);
+router.patch("/update-email", (0, authentication_middleware_1.authentication)(), (0, validation_middleware_1.validation)(validators.updateEmail), user_service_2.default.updateEmail);
+router.patch("/confirm-email-update", (0, authentication_middleware_1.authentication)(), (0, validation_middleware_1.validation)(validators.confirmEmailUpdate), user_service_2.default.confirmUpdateEmail);
 exports.default = router;

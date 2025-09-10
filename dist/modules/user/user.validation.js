@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updatePassword = exports.updateBasicInfo = exports.hardDelete = exports.restoreAccount = exports.freezeAccount = exports.logout = void 0;
+exports.confirmEmailUpdate = exports.updateEmail = exports.updatePassword = exports.updateBasicInfo = exports.hardDelete = exports.restoreAccount = exports.freezeAccount = exports.logout = void 0;
 const zod_1 = require("zod");
 const token_security_1 = require("../../utils/security/token.security");
 const mongoose_1 = require("mongoose");
@@ -51,4 +51,17 @@ exports.updatePassword = {
     }).refine((data) => {
         return data.password === data.confirmPassword && data.password !== data.oldPassword;
     }, { path: ["password"], error: "passwords missmatch confirm password or password is same as old password" })
+};
+exports.updateEmail = {
+    body: zod_1.z.object({
+        oldEmail: validation_middleware_1.generalFields.email,
+        email: validation_middleware_1.generalFields.email
+    }).refine((data) => {
+        return data.email !== data.oldEmail;
+    }, { path: ['email'], error: "email is same as old email" })
+};
+exports.confirmEmailUpdate = {
+    body: zod_1.z.object({
+        otp: validation_middleware_1.generalFields.otp
+    })
 };

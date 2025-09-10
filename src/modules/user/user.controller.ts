@@ -74,4 +74,12 @@ router.patch("/update-basic-info", authentication(),
 router.patch("/update-password", authentication(),
   validation(validators.updatePassword), userService.updatePassword)
 
+
+router.patch("/update-email", authentication()
+  , validation(validators.updateEmail), userService.updateEmail)
+
+router.patch("/confirm-email-update", authentication(),
+  validation(validators.confirmEmailUpdate), userService.confirmUpdateEmail
+)
+
 export default router;

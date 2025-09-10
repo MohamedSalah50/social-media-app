@@ -13,6 +13,8 @@ const s3_events_1 = __importDefault(require("../../utils/multer/s3.events"));
 const success_response_1 = require("../../utils/response/success.response");
 const encryption_security_1 = require("../../utils/security/encryption.security");
 const hash_security_1 = require("../../utils/security/hash.security");
+const otp_1 = require("../../utils/otp");
+const email_event_1 = require("../../utils/events/email.event");
 class UserService {
     userModel = new user_repository_1.userRepository(user_model_1.UserModel);
     // private tokenModel = new TokenRepository(TokenModel);
@@ -171,6 +173,36 @@ class UserService {
             throw new error_response_1.notFoundException("user not found");
         }
         return (0, success_response_1.successResponse)({ res, message: "password updated suuccessfully" });
+    };
+    updateEmail = async (req, res) => {
+        const { oldEmail, email } = req.body;
+        //handled in validation
+        if (email === oldEmail) {
+            throw new error_response_1.BadRequest("email is same as old email");
+        }
+        const otp = (0, otp_1.generateOtp)();
+        console.log(otp);
+        await this.userModel.findOneAndUpdate({
+            filter: { _id: req?.user?._id },
+            update: { tempEmail: email, tempEmailOtp: await (0, hash_security_1.generateHash)(String(otp)) }
+        });
+        email_event_1.emailEmitter.emit("sendConfirmEmail", { to: email, otp });
+        return (0, success_response_1.successResponse)({ res, message: "otp sent , please confirm your new email" });
+    };
+    confirmUpdateEmail = async (req, res) => {
+        const { otp } = req.body;
+        const user = await this.userModel.findOne({ filter: { _id: req.user?._id } });
+        if (!user?.tempEmail || !user?.tempEmailOtp) {
+            throw new error_response_1.BadRequest("there's no pending email request");
+        }
+        if (!await (0, hash_security_1.compareHash)(otp, user.tempEmailOtp)) {
+            throw new error_response_1.BadRequest("otp not match");
+        }
+        await this.userModel.findOneAndUpdate({
+            filter: { _id: req.user?._id },
+            update: { email: user.tempEmail, changeCredentialsTime: Date.now(), $unset: { tempEmail: 1, tempEmailOtp: 1 }, $inc: { __v: 1 } }
+        });
+        return (0, success_response_1.successResponse)({ res, message: "email updated successfully,please login again" });
     };
 }
 exports.default = new UserService();

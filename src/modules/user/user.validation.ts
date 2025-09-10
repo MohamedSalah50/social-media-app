@@ -63,3 +63,19 @@ export const updatePassword = {
     return data.password === data.confirmPassword && data.password !== data.oldPassword
   }, { path: ["password"], error: "passwords missmatch confirm password or password is same as old password" })
 }
+
+export const updateEmail = {
+  body: z.object({
+    oldEmail: generalFields.email,
+    email: generalFields.email
+  }).refine((data) => {
+    return data.email !== data.oldEmail
+  },
+    { path: ['email'], error: "email is same as old email" })
+}
+
+export const confirmEmailUpdate = {
+  body: z.object({
+    otp: generalFields.otp
+  })
+}
