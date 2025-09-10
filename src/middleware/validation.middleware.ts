@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express"
 import z, { ZodError, ZodType } from "zod"
+import { GenderEnum } from "../db/models/user.model";
 
 type KeyType = keyof Request; // "body" || "params" || "query" || "headers"
 type SchemaType = Partial<Record<KeyType, ZodType>>
@@ -36,5 +37,6 @@ export const generalFields = {
     password: z.string().regex(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/),
     confirmPassword: z.string(),
     phone: z.string(),
-    otp: z.string().regex(/^\d{6}$/)
+    otp: z.string().regex(/^\d{6}$/),
+    gender: z.enum([GenderEnum.male, GenderEnum.female]),
 }

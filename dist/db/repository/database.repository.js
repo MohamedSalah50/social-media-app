@@ -32,6 +32,14 @@ class DatabaseRepository {
             },
         }, options);
     }
+    async findOneAndUpdate({ filter = {}, update = {}, options = { runValidators: true, new: true }, }) {
+        return await this.model.findOneAndUpdate(filter, {
+            ...update,
+            $inc: {
+                __v: 1,
+            },
+        }, options);
+    }
     async deleteOne({ filter }) {
         return await this.model.deleteOne(filter);
     }

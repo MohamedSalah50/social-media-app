@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { LogOutEnum } from "../../utils/security/token.security";
 import { Types } from "mongoose";
+import { generalFields } from "../../middleware/validation.middleware";
 
 export const logout = {
   body: z.strictObject({
@@ -42,3 +43,23 @@ export const restoreAccount = {
 };
 
 export const hardDelete = restoreAccount;
+
+
+export const updateBasicInfo = {
+  body: z.object({
+    username: generalFields.username.optional(),
+    phone: generalFields.phone.optional(),
+    gender: generalFields.gender.optional()
+  })
+}
+
+
+export const updatePassword = {
+  body: z.strictObject({
+    oldPassword: generalFields.password,
+    password: generalFields.password,
+    confirmPassword: generalFields.confirmPassword
+  }).refine((data) => {
+    return data.password === data.confirmPassword && data.password !== data.oldPassword
+  }, { path: ["password"], error: "passwords missmatch confirm password or password is same as old password" })
+}

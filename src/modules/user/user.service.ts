@@ -27,19 +27,23 @@ import {
   UnAuthorizedException,
 } from "../../utils/response/error.response";
 import s3event from "../../utils/multer/s3.events";
-import { IFreezeAccountDto, IRestoreAccountDto } from "./user.dto";
+import { IFreezeAccountDto, IRestoreAccountDto, IUpdatePasswordDto } from "./user.dto";
 import { successResponse } from "../../utils/response/success.response";
 import { IUserResponse, IProfileImage } from "./user.entities";
 import { ILoginResponse } from "../auth/auth.entities";
+import { decryptEncryption, generateEncryption } from "../../utils/security/encryption.security";
+import { compareHash, generateHash } from "../../utils/security/hash.security";
 
 class UserService {
   private userModel = new userRepository(UserModel);
   // private tokenModel = new TokenRepository(TokenModel);
-  constructor() {}
+  constructor() { }
   profile = async (req: Request, res: Response): Promise<Response> => {
     if (!req.user) {
       throw new UnAuthorizedException("missing user details");
     }
+
+    req.user.phone = decryptEncryption({ cipherText: req.user.phone });
     return successResponse<IUserResponse>({
       res,
       data: {
@@ -197,6 +201,46 @@ class UserService {
 
     return successResponse({ res });
   };
+
+
+  updateBasicInfo = async (req: Request, res: Response) => {
+
+    if (req.body.phone) {
+      req.body.phone = await generateEncryption({ plainText: req.body.phone });
+    }
+    const user = await this.userModel.findOneAndUpdate({
+      filter: { _id: req?.user?._id },
+      update: req.body,
+    })
+
+    if (!user) {
+      throw new notFoundException("user not found")
+    }
+
+    return successResponse({ res })
+  }
+
+
+  updatePassword = async (req: Request, res: Response) => {
+
+    const { oldPassword, password }: IUpdatePasswordDto = req.body;
+
+    if (!await compareHash(oldPassword, req?.user?.password as string)) {
+      throw new BadRequest("old password not match")
+    }
+
+    const user = await this.userModel.findOneAndUpdate({
+      filter: { _id: req?.user?._id },
+      update: { password: await generateHash(password), changeCredentialsTime: Date.now() },
+    })
+
+    if (!user) {
+      throw new notFoundException("user not found")
+    }
+
+    return successResponse({ res, message: "password updated suuccessfully" })
+  }
+
 }
 
 export default new UserService();

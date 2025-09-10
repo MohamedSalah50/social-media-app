@@ -11,6 +11,8 @@ const cloud_multer_1 = require("../../utils/multer/cloud.multer");
 const error_response_1 = require("../../utils/response/error.response");
 const s3_events_1 = __importDefault(require("../../utils/multer/s3.events"));
 const success_response_1 = require("../../utils/response/success.response");
+const encryption_security_1 = require("../../utils/security/encryption.security");
+const hash_security_1 = require("../../utils/security/hash.security");
 class UserService {
     userModel = new user_repository_1.userRepository(user_model_1.UserModel);
     // private tokenModel = new TokenRepository(TokenModel);
@@ -19,6 +21,7 @@ class UserService {
         if (!req.user) {
             throw new error_response_1.UnAuthorizedException("missing user details");
         }
+        req.user.phone = (0, encryption_security_1.decryptEncryption)({ cipherText: req.user.phone });
         return (0, success_response_1.successResponse)({
             res,
             data: {
@@ -141,6 +144,33 @@ class UserService {
         }
         await (0, s3_config_1.deleteFolderByPrefix)({ path: `users/${userId}` });
         return (0, success_response_1.successResponse)({ res });
+    };
+    updateBasicInfo = async (req, res) => {
+        if (req.body.phone) {
+            req.body.phone = await (0, encryption_security_1.generateEncryption)({ plainText: req.body.phone });
+        }
+        const user = await this.userModel.findOneAndUpdate({
+            filter: { _id: req?.user?._id },
+            update: req.body,
+        });
+        if (!user) {
+            throw new error_response_1.notFoundException("user not found");
+        }
+        return (0, success_response_1.successResponse)({ res });
+    };
+    updatePassword = async (req, res) => {
+        const { oldPassword, password } = req.body;
+        if (!await (0, hash_security_1.compareHash)(oldPassword, req?.user?.password)) {
+            throw new error_response_1.BadRequest("old password not match");
+        }
+        const user = await this.userModel.findOneAndUpdate({
+            filter: { _id: req?.user?._id },
+            update: { password: await (0, hash_security_1.generateHash)(password), changeCredentialsTime: Date.now() },
+        });
+        if (!user) {
+            throw new error_response_1.notFoundException("user not found");
+        }
+        return (0, success_response_1.successResponse)({ res, message: "password updated suuccessfully" });
     };
 }
 exports.default = new UserService();

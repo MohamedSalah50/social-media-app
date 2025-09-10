@@ -13,6 +13,7 @@ import {
   fileValidation,
   storageEnum,
 } from "../../utils/multer/cloud.multer";
+import userService from "./user.service";
 
 const router = Router();
 
@@ -66,5 +67,11 @@ router.post(
   validation(validators.logout),
   UserService.logout
 );
+
+router.patch("/update-basic-info", authentication(),
+  validation(validators.updateBasicInfo), UserService.updateBasicInfo)
+
+router.patch("/update-password", authentication(),
+  validation(validators.updatePassword), userService.updatePassword)
 
 export default router;

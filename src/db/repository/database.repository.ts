@@ -17,7 +17,7 @@ import {
 
 export type Lean<T> = HydratedDocument<FlattenMaps<T>>;
 export abstract class DatabaseRepository<TDocument> {
-  constructor(protected readonly model: Model<TDocument>) {}
+  constructor(protected readonly model: Model<TDocument>) { }
 
   async create({
     data,
@@ -87,8 +87,29 @@ export abstract class DatabaseRepository<TDocument> {
     );
   }
 
+  async findOneAndUpdate({
+    filter = {},
+    update={},
+    options = { runValidators: true, new: true },
+  }: {
+    filter: RootFilterQuery<TDocument>,
+    update?: UpdateQuery<TDocument>,
+    options?: QueryOptions<TDocument>
+  }): Promise<HydratedDocument<TDocument> | Lean<TDocument> | null> {
+    return await this.model.findOneAndUpdate(
+      filter,
+      {
+        ...update,
+        $inc: {
+          __v: 1,
+        },
+      },
+      options
+    );
+  }
 
-  async deleteOne({ filter }: { filter: RootFilterQuery<TDocument> }) : Promise<DeleteResult> {
+
+  async deleteOne({ filter }: { filter: RootFilterQuery<TDocument> }): Promise<DeleteResult> {
     return await this.model.deleteOne(filter);
   }
 
