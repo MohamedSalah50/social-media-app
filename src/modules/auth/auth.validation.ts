@@ -9,6 +9,13 @@ export const login = {
     })
 }
 
+export const loginConfirmation = {
+    body: z.strictObject({
+        email: generalFields.email,
+        otp: generalFields.otp
+    })
+}
+
 export const signup = {
     body: login.body.extend({
         username: generalFields.username,

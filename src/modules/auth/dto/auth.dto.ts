@@ -8,3 +8,4 @@ export type ISignupWithGmailInputs = z.infer<typeof validators.signupWithGmail.b
 export type ISendForgotCode = z.infer<typeof validators.sendForgotPasword.body>
 export type IVerifyForgotCode = z.infer<typeof validators.verifyForgotPassword.body>
 export type IResetForgotCode = z.infer<typeof validators.resetForgotPassword.body>
+export type IConfirmationLogin = z.infer<typeof validators.loginConfirmation.body>

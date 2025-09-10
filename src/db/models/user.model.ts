@@ -1,5 +1,4 @@
 import { Schema, model, models, Types, HydratedDocument } from "mongoose";
-import { number } from "zod";
 
 
 export enum GenderEnum {
@@ -44,7 +43,10 @@ export interface IUser {
   updatedAt?: Date;
   provider?: ProviderEnum;
   tempEmail?: string,
-  tempEmailOtp?: string
+  tempEmailOtp?: string,
+  loginTempOtp?: string,
+  temp2faOtp?: string,
+  is2faEnabled?: boolean
 }
 
 const userSchema = new Schema<IUser>(
@@ -79,8 +81,11 @@ const userSchema = new Schema<IUser>(
       enum: ProviderEnum,
       default: ProviderEnum.System,
     },
+    loginTempOtp: { type: String },
     tempEmail: { type: String },
-    tempEmailOtp: { type: String }
+    tempEmailOtp: { type: String },
+    temp2faOtp: { type: String },
+    is2faEnabled: { type: Boolean, default: false }
   },
   {
     timestamps: true,

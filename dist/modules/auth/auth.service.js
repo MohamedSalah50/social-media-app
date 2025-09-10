@@ -92,7 +92,32 @@ class AuthenticationService {
         if (!(await (0, hash_security_1.compareHash)(password, user.password))) {
             throw new error_response_1.notFoundException("in-valid login data");
         }
+        if (!user.is2faEnabled) {
+            const credentials = await (0, token_security_1.createLoginCredentials)(user);
+            return (0, success_response_1.successResponse)({ res, data: { credentials } });
+        }
+        const otp = (0, otp_1.generateOtp)();
+        await this.userModel.updateOne({
+            filter: { _id: user._id },
+            update: { loginTempOtp: await (0, hash_security_1.generateHash)(String(otp)) },
+        });
+        email_event_1.emailEmitter.emit("sendLoginOtp", { to: user.email, otp });
+        return (0, success_response_1.successResponse)({ res, message: "OTP sent to your email. Please confirm login" });
+    };
+    loginConfirmation = async (req, res) => {
+        const { email, otp } = req.body;
+        const user = await this.userModel.findOne({ filter: { email } });
+        if (!user || !user.is2faEnabled) {
+            throw new error_response_1.BadRequest("2fa not enabled");
+        }
+        if (!user.loginTempOtp) {
+            throw new error_response_1.BadRequest("there's no pending login request");
+        }
+        if (!await (0, hash_security_1.compareHash)(otp, user.loginTempOtp)) {
+            throw new error_response_1.BadRequest("invalid otp");
+        }
         const credentials = await (0, token_security_1.createLoginCredentials)(user);
+        await this.userModel.updateOne({ filter: { email }, update: { $unset: { loginTempOtp: 1 } } });
         return (0, success_response_1.successResponse)({ res, data: { credentials } });
     };
     confirmEmail = async (req, res) => {

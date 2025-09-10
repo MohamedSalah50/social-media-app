@@ -204,5 +204,27 @@ class UserService {
         });
         return (0, success_response_1.successResponse)({ res, message: "email updated successfully,please login again" });
     };
+    twoFaEnapleRequest = async (req, res) => {
+        const user = await this.userModel.findOne({ filter: { _id: req.user?._id } });
+        const otp = (0, otp_1.generateOtp)();
+        await this.userModel.updateOne({
+            filter: { _id: req.user?._id },
+            update: { temp2faOtp: await (0, hash_security_1.generateHash)(String(otp)) }
+        });
+        email_event_1.emailEmitter.emit("sendConfirmEmail", { to: user?.email, otp });
+        return (0, success_response_1.successResponse)({ res, message: "otp sent , please confirm your email 2fa" });
+    };
+    twoFaEnapleConfirm = async (req, res) => {
+        const { otp } = req.body;
+        const user = await this.userModel.findOne({ filter: { _id: req.user?._id } });
+        if (!await (0, hash_security_1.compareHash)(otp, user?.temp2faOtp)) {
+            throw new error_response_1.BadRequest("otp mismatch");
+        }
+        await this.userModel.findOneAndUpdate({
+            filter: { _id: req.user?._id },
+            update: { is2faEnabled: true, $unset: { temp2faOtp: 1 }, $inc: { __v: 1 } }
+        });
+        return (0, success_response_1.successResponse)({ res, message: "2fa enabled successfully" });
+    };
 }
 exports.default = new UserService();

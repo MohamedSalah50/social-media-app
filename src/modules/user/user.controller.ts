@@ -82,4 +82,8 @@ router.patch("/confirm-email-update", authentication(),
   validation(validators.confirmEmailUpdate), userService.confirmUpdateEmail
 )
 
+router.post("/2fa-enaple-request", authentication(), userService.twoFaEnapleRequest)
+
+router.post("/2fa-enaple-verify", authentication(), validation(validators.twofaEnapleVerify), userService.twoFaEnapleConfirm)
+
 export default router;

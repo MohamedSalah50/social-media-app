@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { ProviderEnum, UserModel } from "../../db/models/user.model";
 import {
+  IConfirmationLogin,
   IConfirmEmailInputs,
   ILoginBodyInputs,
   IResetForgotCode,
@@ -140,10 +141,42 @@ class AuthenticationService {
       throw new notFoundException("in-valid login data");
     }
 
-    const credentials = await createLoginCredentials(user);
+    if (!user.is2faEnabled) {
+      const credentials = await createLoginCredentials(user);
+      return successResponse<ILoginResponse>({ res, data: { credentials } });
+    }
 
-    return successResponse<ILoginResponse>({ res, data: { credentials } });
+    const otp = generateOtp();
+
+    await this.userModel.updateOne({
+      filter: { _id: user._id },
+      update: { loginTempOtp: await generateHash(String(otp)) },
+    })
+
+    emailEmitter.emit("sendLoginOtp", { to: user.email, otp });
+
+    return successResponse({ res, message: "OTP sent to your email. Please confirm login" });
+
   };
+
+  loginConfirmation = async (req: Request, res: Response): Promise<Response> => {
+    const { email, otp } : IConfirmationLogin = req.body;
+    const user = await this.userModel.findOne({ filter: { email } });
+
+    if (!user || !user.is2faEnabled) {
+      throw new BadRequest("2fa not enabled")
+    }
+    if (!user.loginTempOtp) {
+      throw new BadRequest("there's no pending login request")
+    }
+
+    if (!await compareHash(otp, user.loginTempOtp)) {
+      throw new BadRequest("invalid otp")
+    }
+    const credentials = await createLoginCredentials(user);
+    await this.userModel.updateOne({ filter: { email }, update: { $unset: { loginTempOtp: 1 } } })
+    return successResponse<ILoginResponse>({ res, data: { credentials } });
+  }
 
   confirmEmail = async (req: Request, res: Response): Promise<Response> => {
     const { email, otp }: IConfirmEmailInputs = req.body;

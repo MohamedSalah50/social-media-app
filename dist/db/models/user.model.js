@@ -48,8 +48,11 @@ const userSchema = new mongoose_1.Schema({
         enum: ProviderEnum,
         default: ProviderEnum.System,
     },
+    loginTempOtp: { type: String },
     tempEmail: { type: String },
-    tempEmailOtp: { type: String }
+    tempEmailOtp: { type: String },
+    temp2faOtp: { type: String },
+    is2faEnabled: { type: Boolean, default: false }
 }, {
     timestamps: true,
     strictQuery: true,

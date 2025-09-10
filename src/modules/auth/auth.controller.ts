@@ -10,6 +10,7 @@ router.post("/signup", validation(authValidation.signup), AuthenticationService.
 router.post("/signup-with-gmail", validation(authValidation.signupWithGmail), AuthenticationService.signupWithGmail)
 router.post("/login-with-gmail", validation(authValidation.loginWithGmail), AuthenticationService.LoginWithGmail)
 router.post("/login", validation(authValidation.login), AuthenticationService.login)
+router.post("/confirmation-login", validation(authValidation.loginConfirmation), AuthenticationService.loginConfirmation)
 router.post("/confirmEmail", validation(authValidation.confirmEmail), AuthenticationService.confirmEmail)
 
 router.patch("/send-forgot-password", validation(authValidation.sendForgotPasword), AuthenticationService.sendForgotPasword)

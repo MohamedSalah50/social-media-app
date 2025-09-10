@@ -19,6 +19,17 @@ emailEmitter.on("sendConfirmEmail", async (data: IEmail) => {
   }
 });
 
+emailEmitter.on("sendLoginOtp", async (data: IEmail) => {
+  try {
+    data.subject = "confirm-email";
+    data.html = verifyEmail({ otp: data.otp, title: "confirm your email" })
+    await sendEmail(data);
+  } catch (err) {
+    console.error("❌ email failed:", err);
+  }
+});
+
+
 emailEmitter.on("forgotPassword", async (data) => {
   try {
     data.subject = "forgot-password";

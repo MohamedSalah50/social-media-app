@@ -27,7 +27,7 @@ import {
   UnAuthorizedException,
 } from "../../utils/response/error.response";
 import s3event from "../../utils/multer/s3.events";
-import { IConfirmUpdateEmail, IFreezeAccountDto, IRestoreAccountDto, IUpdateEmailDto, IUpdatePasswordDto } from "./user.dto";
+import { IConfirmUpdateEmail, IFreezeAccountDto, IRestoreAccountDto, ITwofaEnapleVerifyDto, IUpdateEmailDto, IUpdatePasswordDto } from "./user.dto";
 import { successResponse } from "../../utils/response/success.response";
 import { IUserResponse, IProfileImage } from "./user.entities";
 import { ILoginResponse } from "../auth/auth.entities";
@@ -288,6 +288,41 @@ class UserService {
     })
 
     return successResponse({ res, message: "email updated successfully,please login again" })
+  }
+
+
+  twoFaEnapleRequest = async (req: Request, res: Response) => {
+
+    const user = await this.userModel.findOne({ filter: { _id: req.user?._id } })
+
+    const otp = generateOtp();
+
+    await this.userModel.updateOne({
+      filter: { _id: req.user?._id },
+      update: { temp2faOtp: await generateHash(String(otp)) }
+    })
+
+    emailEmitter.emit("sendConfirmEmail", { to: user?.email, otp });
+
+    return successResponse({ res, message: "otp sent , please confirm your email 2fa" })
+  }
+
+  twoFaEnapleConfirm = async (req: Request, res: Response) => {
+    const { otp }: ITwofaEnapleVerifyDto = req.body;
+
+    const user = await this.userModel.findOne({ filter: { _id: req.user?._id } })
+
+    if (!await compareHash(otp, user?.temp2faOtp as string)) {
+      throw new BadRequest("otp mismatch")
+    }
+
+    await this.userModel.findOneAndUpdate({
+      filter: { _id: req.user?._id },
+      update: { is2faEnabled: true, $unset: { temp2faOtp: 1 }, $inc: { __v: 1 } }
+    })
+
+    return successResponse({ res, message: "2fa enabled successfully" })
+
   }
 
 

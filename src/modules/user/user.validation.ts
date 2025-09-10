@@ -79,3 +79,9 @@ export const confirmEmailUpdate = {
     otp: generalFields.otp
   })
 }
+
+export const twofaEnapleVerify = {
+  body: z.object({
+    otp: generalFields.otp
+  })
+}

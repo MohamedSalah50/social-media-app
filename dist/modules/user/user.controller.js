@@ -64,4 +64,6 @@ router.patch("/update-basic-info", (0, authentication_middleware_1.authenticatio
 router.patch("/update-password", (0, authentication_middleware_1.authentication)(), (0, validation_middleware_1.validation)(validators.updatePassword), user_service_2.default.updatePassword);
 router.patch("/update-email", (0, authentication_middleware_1.authentication)(), (0, validation_middleware_1.validation)(validators.updateEmail), user_service_2.default.updateEmail);
 router.patch("/confirm-email-update", (0, authentication_middleware_1.authentication)(), (0, validation_middleware_1.validation)(validators.confirmEmailUpdate), user_service_2.default.confirmUpdateEmail);
+router.post("/2fa-enaple-request", (0, authentication_middleware_1.authentication)(), user_service_2.default.twoFaEnapleRequest);
+router.post("/2fa-enaple-verify", (0, authentication_middleware_1.authentication)(), (0, validation_middleware_1.validation)(validators.twofaEnapleVerify), user_service_2.default.twoFaEnapleConfirm);
 exports.default = router;

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.confirmEmailUpdate = exports.updateEmail = exports.updatePassword = exports.updateBasicInfo = exports.hardDelete = exports.restoreAccount = exports.freezeAccount = exports.logout = void 0;
+exports.twofaEnapleVerify = exports.confirmEmailUpdate = exports.updateEmail = exports.updatePassword = exports.updateBasicInfo = exports.hardDelete = exports.restoreAccount = exports.freezeAccount = exports.logout = void 0;
 const zod_1 = require("zod");
 const token_security_1 = require("../../utils/security/token.security");
 const mongoose_1 = require("mongoose");
@@ -61,6 +61,11 @@ exports.updateEmail = {
     }, { path: ['email'], error: "email is same as old email" })
 };
 exports.confirmEmailUpdate = {
+    body: zod_1.z.object({
+        otp: validation_middleware_1.generalFields.otp
+    })
+};
+exports.twofaEnapleVerify = {
     body: zod_1.z.object({
         otp: validation_middleware_1.generalFields.otp
     })
