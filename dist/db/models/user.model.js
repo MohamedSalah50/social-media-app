@@ -2,6 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserModel = exports.ProviderEnum = exports.GenderEnum = void 0;
 const mongoose_1 = require("mongoose");
+const hash_security_1 = require("../../utils/security/hash.security");
+const email_event_1 = require("../../utils/events/email.event");
 var GenderEnum;
 (function (GenderEnum) {
     GenderEnum["male"] = "male";
@@ -68,28 +70,32 @@ userSchema
     .get(function () {
     return this.firstName + " " + this.lastName;
 });
-// userSchema.pre("findOne", async function (next) {
-//   const query = this.getQuery();
-//   console.log({ this: this, query });
-//   if (query.paranoid === false) {
-//     this.setQuery({ ...query })
-//   } else {
-//     this.setQuery({ ...query, freezedAt: { $exists: false } })
-//   }
-//   next();
-// })
-// userSchema.pre("save", async function (this: HUserDocument & { wasNew: boolean }, next) {
-//   this.wasNew = this.isNew || this.isModified("email");
-//   console.log({ prevalidate: this, password: this.isModified("password") });
-//   if (this.isModified("password")) {
-//     this.password = await generateHash(this.password);
-//   }
-// })
-// userSchema.post("save", async function (doc, next) {
-//   const that = this as HUserDocument & { wasNew: boolean };
-//   if (that.wasNew) {
-//     emailEmitter.emit("sendConfirmEmail", { to: this.email, otp: 1516515 });
-//   }
-//   next();
-// })
+userSchema.pre("save", async function (next) {
+    this.wasNew = this.isNew;
+    if (this.isModified("password")) {
+        this.password = await (0, hash_security_1.generateHash)(this.password);
+    }
+    if (this.isModified("confirmEmailOtp")) {
+        this.confirmEmailPlainOtp = this.confirmEmailOtp;
+        this.confirmEmailOtp = await (0, hash_security_1.generateHash)(this.confirmEmailOtp);
+    }
+    next();
+});
+userSchema.post("save", async function (doc, next) {
+    const that = this;
+    if (that.wasNew && that.confirmEmailPlainOtp) {
+        email_event_1.emailEmitter.emit("sendConfirmEmail", { to: this.email, otp: that.confirmEmailPlainOtp });
+    }
+    next();
+});
+userSchema.pre(['find', 'findOne'], function (next) {
+    const query = this.getQuery();
+    if (query.paranoid === false) {
+        this.setQuery({ ...query });
+    }
+    else {
+        this.setQuery({ ...query, freezedAt: { $exists: false } });
+    }
+    next();
+});
 exports.UserModel = mongoose_1.models.User || (0, mongoose_1.model)("User", userSchema);

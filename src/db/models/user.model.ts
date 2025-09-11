@@ -1,4 +1,6 @@
 import { Schema, model, models, Types, HydratedDocument } from "mongoose";
+import { generateHash } from "../../utils/security/hash.security";
+import { emailEmitter } from "../../utils/events/email.event";
 
 
 export enum GenderEnum {
@@ -105,33 +107,37 @@ userSchema
     return this.firstName + " " + this.lastName;
   });
 
-// userSchema.pre("findOne", async function (next) {
-//   const query = this.getQuery();
-//   console.log({ this: this, query });
-//   if (query.paranoid === false) {
-//     this.setQuery({ ...query })
-//   } else {
-//     this.setQuery({ ...query, freezedAt: { $exists: false } })
-//   }
-//   next();
-// })
+userSchema.pre("save", async function (this: HUserDocument & { wasNew: boolean, confirmEmailPlainOtp?: string }, next) {
+  this.wasNew = this.isNew;
 
-// userSchema.pre("save", async function (this: HUserDocument & { wasNew: boolean }, next) {
-//   this.wasNew = this.isNew || this.isModified("email");
-//   console.log({ prevalidate: this, password: this.isModified("password") });
+  if (this.isModified("password")) {
+    this.password = await generateHash(this.password);
+  }
+  if (this.isModified("confirmEmailOtp")) {
+    this.confirmEmailPlainOtp = this.confirmEmailOtp as string;
+    this.confirmEmailOtp = await generateHash(this.confirmEmailOtp as string)
+  }
+  next();
+})
 
-//   if (this.isModified("password")) {
-//     this.password = await generateHash(this.password);
-//   }
-// })
+userSchema.post("save", async function (doc, next) {
+  const that = this as HUserDocument & { wasNew: boolean, confirmEmailPlainOtp?: string }
+  if (that.wasNew && that.confirmEmailPlainOtp) {
+    emailEmitter.emit("sendConfirmEmail", { to: this.email, otp: that.confirmEmailPlainOtp });
+  }
+  next();
+})
 
-// userSchema.post("save", async function (doc, next) {
-//   const that = this as HUserDocument & { wasNew: boolean };
-//   if (that.wasNew) {
-//     emailEmitter.emit("sendConfirmEmail", { to: this.email, otp: 1516515 });
-//   }
-//   next();
-// })
+
+userSchema.pre(['find', 'findOne'], function (next) {
+  const query = this.getQuery();
+  if (query.paranoid === false) {
+    this.setQuery({ ...query })
+  } else {
+    this.setQuery({ ...query, freezedAt: { $exists: false } })
+  }
+  next()
+})
 
 
 export const UserModel = models.User || model<IUser>("User", userSchema);

@@ -1,0 +1,62 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const success_response_1 = require("../../utils/response/success.response");
+const repository_1 = require("../../db/repository");
+const user_model_1 = require("../../db/models/user.model");
+const post_model_1 = require("../../db/models/post.model");
+const error_response_1 = require("../../utils/response/error.response");
+const uuid_1 = require("uuid");
+const s3_config_1 = require("../../utils/multer/s3.config");
+class PostService {
+    userModel = new repository_1.userRepository(user_model_1.UserModel);
+    postModel = new repository_1.PostRepository(post_model_1.PostModel);
+    constructor() { }
+    createPost = async (req, res) => {
+        if (req.body.tags?.length &&
+            (await this.userModel.find({ filter: { _id: { $in: req.body.tags } } })).length !== req.body.tags.length) {
+            throw new error_response_1.notFoundException("some of the mentioned users does not exist");
+        }
+        let attachments = [];
+        let assetsFolderId = (0, uuid_1.v4)();
+        if (req.files?.length) {
+            attachments = await (0, s3_config_1.uploadFiles)({
+                files: req.files,
+                path: `users/${req.user?._id}/post/${assetsFolderId}`
+            });
+        }
+        const [post] = await this.postModel.create({
+            data: [{
+                    ...req.body,
+                    attachments,
+                    assetsFolderId,
+                    createdBy: req.user?._id
+                }]
+        }) || [];
+        if (!post) {
+            if (attachments.length) {
+                await (0, s3_config_1.deleteFiles)({
+                    urls: attachments
+                });
+            }
+            throw new error_response_1.BadRequest("fail to create this post");
+        }
+        return (0, success_response_1.successResponse)({ res, statusCode: 201 });
+    };
+    likePost = async (req, res) => {
+        const { postId } = req.params;
+        const { action } = req.query;
+        let update = { $addToSet: { likes: req.user?._id } };
+        if (action === post_model_1.likeActionEnum.unlike) {
+            update = { $pull: { likes: req.user?._id } };
+        }
+        const post = await this.postModel.findOneAndUpdate({
+            filter: { _id: postId },
+            update,
+        });
+        if (!post) {
+            throw new error_response_1.notFoundException("post not found or invalid postId");
+        }
+        return (0, success_response_1.successResponse)({ res });
+    };
+}
+exports.default = new PostService();

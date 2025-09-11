@@ -16,6 +16,16 @@ class DatabaseRepository {
         }
         return await doc.exec();
     }
+    async find({ filter, select, options, }) {
+        const docs = this.model.find(filter || {}).select(select || "");
+        if (options?.lean) {
+            docs.lean(options.lean);
+        }
+        if (options) {
+            docs.setOptions(options);
+        }
+        return await docs.exec();
+    }
     async updateOne({ filter, update, options, }) {
         return await this.model.updateOne(filter, {
             ...update,
@@ -32,7 +42,7 @@ class DatabaseRepository {
             },
         }, options);
     }
-    async findOneAndUpdate({ filter = {}, update = {}, options = { runValidators: true, new: true }, }) {
+    async findOneAndUpdate({ filter = {}, update = {}, options = { new: true }, }) {
         return await this.model.findOneAndUpdate(filter, {
             ...update,
             $inc: {

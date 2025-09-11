@@ -110,8 +110,8 @@ class AuthenticationService {
         {
           username,
           email,
-          password: await generateHash(password),
-          confirmEmailOtp: await generateHash(String(otp)),
+          password,
+          confirmEmailOtp: `${otp}`,
         },
       ],
       options: { validateBeforeSave: true },
@@ -160,7 +160,7 @@ class AuthenticationService {
   };
 
   loginConfirmation = async (req: Request, res: Response): Promise<Response> => {
-    const { email, otp } : IConfirmationLogin = req.body;
+    const { email, otp }: IConfirmationLogin = req.body;
     const user = await this.userModel.findOne({ filter: { email } });
 
     if (!user || !user.is2faEnabled) {

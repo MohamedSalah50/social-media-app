@@ -1,6 +1,6 @@
 export const verifyEmail = ({ otp, title }: { otp: string; title?: string }): string => {
 
-  return`
+  return `
   <!DOCTYPE html>
   <html>
   <head>
@@ -51,3 +51,5 @@ export const verifyEmail = ({ otp, title }: { otp: string; title?: string }): st
           </html>
           `
 };
+
+

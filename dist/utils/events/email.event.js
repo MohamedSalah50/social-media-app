@@ -15,9 +15,19 @@ exports.emailEmitter.on("sendConfirmEmail", async (data) => {
         console.error("❌ email failed:", err);
     }
 });
+exports.emailEmitter.on("send-tags", async (data) => {
+    try {
+        data.subject = "someone tagged you";
+        data.html = (0, template_email_1.verifyEmail)({ otp: data.otp, title: "you have been tagged" });
+        await (0, send_email_1.sendEmail)(data);
+    }
+    catch (err) {
+        console.error("❌ email failed:", err);
+    }
+});
 exports.emailEmitter.on("sendLoginOtp", async (data) => {
     try {
-        data.subject = "confirm-email";
+        data.subject = "confirmation-login";
         data.html = (0, template_email_1.verifyEmail)({ otp: data.otp, title: "confirm your email" });
         await (0, send_email_1.sendEmail)(data);
     }

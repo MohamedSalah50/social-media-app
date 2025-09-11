@@ -5,8 +5,9 @@ config({ path: resolve("./config/.env.development") });
 import type { Express, Request, Response, NextFunction } from "express";
 import express from "express";
 import cors from "cors";
-import authController from "./modules/auth/auth.controller";
-import userController from "./modules/user/user.controller"
+
+import { authRouter, userRouter, postRouter } from "./modules"
+
 import {
   globalErrorHandling,
 } from "./utils/response/error.response";
@@ -28,8 +29,9 @@ const bootstrap = async (): Promise<void> => {
 
 
 
-  app.use("/auth", authController);
-  app.use("/user", userController);
+  app.use("/auth", authRouter);
+  app.use("/user", userRouter);
+  app.use("/post", postRouter);
 
   app.use(globalErrorHandling);
 

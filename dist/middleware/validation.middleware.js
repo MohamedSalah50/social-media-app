@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.generalFields = exports.validation = void 0;
 const zod_1 = __importDefault(require("zod"));
 const user_model_1 = require("../db/models/user.model");
+const mongoose_1 = require("mongoose");
 const validation = (schema) => {
     return (req, res, next) => {
         // const errors: { key: KeyType, issues: { path: string | number | symbol | undefined, message: string }[] }[] = [];
@@ -13,12 +14,18 @@ const validation = (schema) => {
         for (const key of Object.keys(schema)) {
             if (!schema[key])
                 continue;
+            if (req.file) {
+                req.body.attachments = req.file;
+            }
+            if (req.files) {
+                req.body.attachments = req.files;
+            }
             const validationResult = schema[key].safeParse(req[key]);
             if (!validationResult.success) {
                 const error = validationResult.error;
                 errors.push({
                     key, issues: error.issues.map((issue) => {
-                        return { path: issue.path[0], message: issue.message };
+                        return { path: issue.path, message: issue.message };
                     })
                 });
             }
@@ -38,4 +45,21 @@ exports.generalFields = {
     phone: zod_1.default.string(),
     otp: zod_1.default.string().regex(/^\d{6}$/),
     gender: zod_1.default.enum([user_model_1.GenderEnum.male, user_model_1.GenderEnum.female]),
+    file: function (mimtype) {
+        return zod_1.default.strictObject({
+            fieldname: zod_1.default.string(),
+            originalname: zod_1.default.string(),
+            encoding: zod_1.default.string(),
+            mimetype: zod_1.default.enum(mimtype),
+            buffer: zod_1.default.any().optional,
+            path: zod_1.default.string().optional,
+            size: zod_1.default.number()
+        }).refine((data) => {
+            return data.buffer || data.path;
+        }, {
+            path: ["file"],
+            error: "neither buffer or path is available"
+        });
+    },
+    id: zod_1.default.string().refine((data) => { return mongoose_1.Types.ObjectId.isValid(data); }, { message: "invalid objectId format" })
 };

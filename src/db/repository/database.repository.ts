@@ -45,6 +45,29 @@ export abstract class DatabaseRepository<TDocument> {
     return await doc.exec();
   }
 
+  async find({
+    filter,
+    select,
+    options,
+  }: {
+    filter: RootFilterQuery<TDocument>;
+    select?: ProjectionType<TDocument> | null;
+    options?: QueryOptions<TDocument> | null;
+  }): Promise<Lean<TDocument>[] | HydratedDocument<TDocument>[] | []> {
+    const docs = this.model.find(filter || {}).select(select || "");
+
+    if (options?.lean) {
+      docs.lean(options.lean);
+    }
+
+    if (options) {
+      docs.setOptions(options);
+    }
+
+    return await docs.exec();
+  }
+
+
   async updateOne({
     filter,
     update,
@@ -89,12 +112,12 @@ export abstract class DatabaseRepository<TDocument> {
 
   async findOneAndUpdate({
     filter = {},
-    update={},
-    options = { runValidators: true, new: true },
+    update = {},
+    options = { new: true },
   }: {
-    filter: RootFilterQuery<TDocument>,
+    filter?: RootFilterQuery<TDocument>,
     update?: UpdateQuery<TDocument>,
-    options?: QueryOptions<TDocument>
+    options?: QueryOptions<TDocument> | null;
   }): Promise<HydratedDocument<TDocument> | Lean<TDocument> | null> {
     return await this.model.findOneAndUpdate(
       filter,

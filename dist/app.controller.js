@@ -8,8 +8,7 @@ const node_path_1 = require("node:path");
 (0, dotenv_1.config)({ path: (0, node_path_1.resolve)("./config/.env.development") });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
-const auth_controller_1 = __importDefault(require("./modules/auth/auth.controller"));
-const user_controller_1 = __importDefault(require("./modules/user/user.controller"));
+const modules_1 = require("./modules");
 const error_response_1 = require("./utils/response/error.response");
 const connection_db_1 = require("./db/connection.db");
 const bootstrap = async () => {
@@ -22,8 +21,9 @@ const bootstrap = async () => {
     app.get("/", (req, res, next) => {
         return res.status(200).json({ message: "welcome to social app ♥" });
     });
-    app.use("/auth", auth_controller_1.default);
-    app.use("/user", user_controller_1.default);
+    app.use("/auth", modules_1.authRouter);
+    app.use("/user", modules_1.userRouter);
+    app.use("/post", modules_1.postRouter);
     app.use(error_response_1.globalErrorHandling);
     //hooks
     // async function test() {

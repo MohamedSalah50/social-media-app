@@ -71,8 +71,8 @@ class AuthenticationService {
                 {
                     username,
                     email,
-                    password: await (0, hash_security_1.generateHash)(password),
-                    confirmEmailOtp: await (0, hash_security_1.generateHash)(String(otp)),
+                    password,
+                    confirmEmailOtp: `${otp}`,
                 },
             ],
             options: { validateBeforeSave: true },
