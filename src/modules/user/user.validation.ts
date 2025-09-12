@@ -66,17 +66,18 @@ export const updatePassword = {
 
 export const updateEmail = {
   body: z.object({
-    oldEmail: generalFields.email,
-    email: generalFields.email
-  }).refine((data) => {
-    return data.email !== data.oldEmail
-  },
-    { path: ['email'], error: "email is same as old email" })
+    newEmail: generalFields.email
+  })
+  //   .refine((data) => {
+  //     return data.email !== data.oldEmail
+  //   },
+  //     { path: ['email'], error: "email is same as old email" })
 }
 
 export const confirmEmailUpdate = {
   body: z.object({
-    otp: generalFields.otp
+    oldOtp: generalFields.otp,
+    newOtp: generalFields.otp
   })
 }
 

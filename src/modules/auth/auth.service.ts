@@ -160,6 +160,7 @@ class AuthenticationService {
   };
 
   loginConfirmation = async (req: Request, res: Response): Promise<Response> => {
+    
     const { email, otp }: IConfirmationLogin = req.body;
     const user = await this.userModel.findOne({ filter: { email } });
 

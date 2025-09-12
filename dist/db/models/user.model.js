@@ -52,7 +52,8 @@ const userSchema = new mongoose_1.Schema({
     },
     loginTempOtp: { type: String },
     tempEmail: { type: String },
-    tempEmailOtp: { type: String },
+    oldEmailOtp: { type: String },
+    newEmailOtp: { type: String },
     temp2faOtp: { type: String },
     is2faEnabled: { type: Boolean, default: false }
 }, {

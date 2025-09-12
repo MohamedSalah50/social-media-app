@@ -54,15 +54,17 @@ exports.updatePassword = {
 };
 exports.updateEmail = {
     body: zod_1.z.object({
-        oldEmail: validation_middleware_1.generalFields.email,
-        email: validation_middleware_1.generalFields.email
-    }).refine((data) => {
-        return data.email !== data.oldEmail;
-    }, { path: ['email'], error: "email is same as old email" })
+        newEmail: validation_middleware_1.generalFields.email
+    })
+    //   .refine((data) => {
+    //     return data.email !== data.oldEmail
+    //   },
+    //     { path: ['email'], error: "email is same as old email" })
 };
 exports.confirmEmailUpdate = {
     body: zod_1.z.object({
-        otp: validation_middleware_1.generalFields.otp
+        oldOtp: validation_middleware_1.generalFields.otp,
+        newOtp: validation_middleware_1.generalFields.otp
     })
 };
 exports.twofaEnapleVerify = {

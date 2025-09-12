@@ -246,23 +246,34 @@ class UserService {
 
   updateEmail = async (req: Request, res: Response) => {
 
-    const { oldEmail, email }: IUpdateEmailDto = req.body;
+    const { newEmail }: IUpdateEmailDto = req.body;
 
-    //handled in validation
-    if (email === oldEmail) {
-      throw new BadRequest("email is same as old email")
+    //check if newEmail exsists in all userCollection
+    if (await this.userModel.findOne({ filter: { email: newEmail } })) {
+      throw new BadRequest("email already exsists , please change to another email")
     }
 
-    const otp = generateOtp();
-    console.log(otp);
+    const user = await this.userModel.findOne({ filter: { email: req.user?.email } });
+
+
+
+    const oldOtp = generateOtp();
+    const newOtp = generateOtp();
+    console.log(oldOtp);
+    console.log(newOtp);
 
 
     await this.userModel.findOneAndUpdate({
-      filter: { _id: req?.user?._id },
-      update: { tempEmail: email, tempEmailOtp: await generateHash(String(otp)) }
+      filter: { email: req.user?.email },
+      update: {
+        tempEmail: newEmail,
+        oldEmailOtp: await generateHash(String(oldOtp)),
+        newEmailOtp: await generateHash(String(newOtp))
+      },
     })
 
-    emailEmitter.emit("sendConfirmEmail", { to: email, otp });
+    emailEmitter.emit("sendConfirmEmail", { to: user?.email, otp: oldOtp });
+    emailEmitter.emit("sendConfirmEmail", { to: newEmail, otp: newOtp });
 
 
     return successResponse({ res, message: "otp sent , please confirm your new email" })
@@ -270,21 +281,28 @@ class UserService {
 
   confirmUpdateEmail = async (req: Request, res: Response) => {
 
-    const { otp }: IConfirmUpdateEmail = req.body;
+    const { newOtp, oldOtp }: IConfirmUpdateEmail = req.body;
 
-    const user = await this.userModel.findOne({ filter: { _id: req.user?._id } })
+    const user = await this.userModel.findOne({ filter: { email: req.user?.email } })
 
-    if (!user?.tempEmail || !user?.tempEmailOtp) {
+    if (!user?.tempEmail || (!user?.oldEmailOtp && !user?.newEmailOtp)) {
       throw new BadRequest("there's no pending email request")
     }
 
-    if (!await compareHash(otp, user.tempEmailOtp)) {
-      throw new BadRequest("otp not match")
+    if (!await compareHash(oldOtp, user.oldEmailOtp as string)) {
+      throw new BadRequest("otps not match")
+    }
+
+    if (!await compareHash(newOtp, user.newEmailOtp as string)) {
+      throw new BadRequest("otps not match")
     }
 
     await this.userModel.findOneAndUpdate({
-      filter: { _id: req.user?._id },
-      update: { email: user.tempEmail, changeCredentialsTime: Date.now(), $unset: { tempEmail: 1, tempEmailOtp: 1 }, $inc: { __v: 1 } }
+      filter: { email: req.user?.email },
+      update: {
+        email: user.tempEmail, changeCredentialsTime: Date.now(),
+        $unset: { tempEmail: 1, oldEmailOtp: 1, newEmailOtp: 1 }, $inc: { __v: 1 }
+      }
     })
 
     return successResponse({ res, message: "email updated successfully,please login again" })

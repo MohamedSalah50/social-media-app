@@ -45,7 +45,8 @@ export interface IUser {
   updatedAt?: Date;
   provider?: ProviderEnum;
   tempEmail?: string,
-  tempEmailOtp?: string,
+  oldEmailOtp?: string,
+  newEmailOtp?: string,
   loginTempOtp?: string,
   temp2faOtp?: string,
   is2faEnabled?: boolean
@@ -85,7 +86,8 @@ const userSchema = new Schema<IUser>(
     },
     loginTempOtp: { type: String },
     tempEmail: { type: String },
-    tempEmailOtp: { type: String },
+    oldEmailOtp: { type: String },
+    newEmailOtp: { type: String },
     temp2faOtp: { type: String },
     is2faEnabled: { type: Boolean, default: false }
   },
