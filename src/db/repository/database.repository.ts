@@ -119,6 +119,10 @@ export abstract class DatabaseRepository<TDocument> {
     update?: UpdateQuery<TDocument>,
     options?: QueryOptions<TDocument> | null;
   }): Promise<HydratedDocument<TDocument> | Lean<TDocument> | null> {
+    if (Array.isArray(update)) {
+      update.push({ $set: { __v: { $add: ["$__v", 1] } } });
+      return await this.model.findOneAndUpdate(filter || {}, update, options);
+    }
     return await this.model.findOneAndUpdate(
       filter,
       {

@@ -36,7 +36,7 @@ const postSchema = new mongoose_1.Schema({
     freezedBy: { type: mongoose_1.Schema.Types.ObjectId, ref: "User" },
     restoredAt: Date,
     restoredBy: { type: mongoose_1.Schema.Types.ObjectId, ref: "User" },
-}, { timestamps: true, strictQuery: true });
+}, { timestamps: true, strictQuery: true, toObject: { virtuals: true }, toJSON: { virtuals: true } });
 postSchema.pre(["findOneAndUpdate", "updateOne"], function (next) {
     const query = this.getQuery();
     if (query.paranoid === false) {

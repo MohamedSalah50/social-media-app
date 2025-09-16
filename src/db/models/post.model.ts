@@ -38,6 +38,7 @@ export interface IPost {
     restoredBy?: Types.ObjectId;
 
 
+
     createdAt: Date;
     updatedAt?: Date;
 }
@@ -68,7 +69,7 @@ const postSchema = new Schema<IPost>({
     freezedBy: { type: Schema.Types.ObjectId, ref: "User" },
     restoredAt: Date,
     restoredBy: { type: Schema.Types.ObjectId, ref: "User" },
-}, { timestamps: true, strictQuery: true });
+}, { timestamps: true, strictQuery: true, toObject: { virtuals: true }, toJSON: { virtuals: true } });
 
 postSchema.pre(["findOneAndUpdate", "updateOne"], function (next) {
     const query = this.getQuery();

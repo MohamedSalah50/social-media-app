@@ -7,10 +7,31 @@ const post_model_1 = require("../../db/models/post.model");
 const error_response_1 = require("../../utils/response/error.response");
 const uuid_1 = require("uuid");
 const s3_config_1 = require("../../utils/multer/s3.config");
+const mongoose_1 = require("mongoose");
 class PostService {
     userModel = new repository_1.userRepository(user_model_1.UserModel);
     postModel = new repository_1.PostRepository(post_model_1.PostModel);
     constructor() { }
+    postList = async (req, res) => {
+        const posts = await this.postModel.find({
+            filter: {
+                $or: [
+                    { availability: post_model_1.AvailabilityEnum.public },
+                    {
+                        availability: post_model_1.AvailabilityEnum.friends, createdBy: {
+                            $in: [...(req.user?.friends || []), req.user?._id]
+                        }
+                    },
+                    {
+                        availability: post_model_1.AvailabilityEnum.onlyMe, createdBy: req.user?._id
+                    }, {
+                        tags: { $in: [req.user?._id] }
+                    }
+                ]
+            }
+        });
+        return (0, success_response_1.successResponse)({ res, data: { posts } });
+    };
     createPost = async (req, res) => {
         if (req.body.tags?.length &&
             (await this.userModel.find({ filter: { _id: { $in: req.body.tags } } })).length !== req.body.tags.length) {
@@ -41,6 +62,63 @@ class PostService {
             throw new error_response_1.BadRequest("fail to create this post");
         }
         return (0, success_response_1.successResponse)({ res, statusCode: 201 });
+    };
+    updatePost = async (req, res) => {
+        const post = await this.postModel.findOne({
+            filter: { _id: req.params.postId, createdBy: req.user?._id },
+        });
+        if (!post) {
+            throw new error_response_1.notFoundException("post not found");
+        }
+        if (req.body.tags?.length &&
+            (await this.userModel.find({ filter: { _id: { $in: req.body.tags } } })).length !== req.body.tags.length) {
+            throw new error_response_1.notFoundException("some of the mentioned users does not exist");
+        }
+        let attachments = [];
+        // let assetsFolderId: string = uuid();
+        if (req.files?.length) {
+            attachments = await (0, s3_config_1.uploadFiles)({
+                files: req.files,
+                path: `users/${req.user?._id}/post/${post.assetsFolderId}`
+            });
+        }
+        const updatedPost = await this.postModel.findOneAndUpdate({
+            filter: { _id: post._id },
+            update: [{
+                    $set: {
+                        content: req.body.content,
+                        allowComments: req.body.allowComments || post.allowComments,
+                        availability: req.body.availability || post.availability,
+                        attachments: {
+                            $setUnion: [{
+                                    $setDifference: ["$attachments", req.body.removedAttachments || []]
+                                }, attachments]
+                        },
+                        tags: {
+                            $setUnion: [{
+                                    $setDifference: ["$tags", req.body.removedTags?.map((tag) => { return mongoose_1.Types.ObjectId.createFromHexString(tag); }) || []]
+                                },
+                                req.body.tags?.map((tag) => { return mongoose_1.Types.ObjectId.createFromHexString(tag); }) || []]
+                        },
+                    }
+                }]
+        });
+        if (!updatedPost) {
+            if (attachments.length) {
+                await (0, s3_config_1.deleteFiles)({
+                    urls: attachments
+                });
+            }
+            throw new error_response_1.BadRequest("fail to update this post");
+        }
+        else {
+            if (req.body.removedAttachments?.length) {
+                await (0, s3_config_1.deleteFiles)({
+                    urls: req.body.removedAttachments
+                });
+            }
+        }
+        return (0, success_response_1.successResponse)({ res });
     };
     likePost = async (req, res) => {
         const { postId } = req.params;

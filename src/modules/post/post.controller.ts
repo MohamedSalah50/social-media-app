@@ -7,10 +7,17 @@ import { cloudFileUpload, fileValidation } from "../../utils/multer/cloud.multer
 
 const router = Router();
 
+router.get("/", authentication(), postService.postList);
+
 router.post("/create-post", authentication(),
-    cloudFileUpload({ validation: fileValidation.image}).array("attachments", 2),
+    cloudFileUpload({ validation: fileValidation.image }).array("attachments", 2),
     validation(validators.createPost), postService.createPost)
 
-    router.patch("/:postId/like",authentication(), validation(validators.likePost), postService.likePost)
+
+router.patch("/:postId", authentication(),
+    cloudFileUpload({ validation: fileValidation.image }).array("attachments", 2),
+    validation(validators.updatePost), postService.updatePost)
+
+router.patch("/:postId/like", authentication(), validation(validators.likePost), postService.likePost)
 
 export default router;

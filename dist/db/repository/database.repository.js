@@ -43,6 +43,10 @@ class DatabaseRepository {
         }, options);
     }
     async findOneAndUpdate({ filter = {}, update = {}, options = { new: true }, }) {
+        if (Array.isArray(update)) {
+            update.push({ $set: { __v: { $add: ["$__v", 1] } } });
+            return await this.model.findOneAndUpdate(filter || {}, update, options);
+        }
         return await this.model.findOneAndUpdate(filter, {
             ...update,
             $inc: {
