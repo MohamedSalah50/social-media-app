@@ -15,7 +15,7 @@ export enum RoleEnum {
 
 export enum SignatureLevelEnum {
     Bearer = "Berear",
-    System = "system"
+    System = "System"
 }
 
 export enum tokenEnum {

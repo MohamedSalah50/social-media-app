@@ -51,6 +51,7 @@ export interface IUser {
   temp2faOtp?: string,
   is2faEnabled?: boolean,
   friends?: Types.ObjectId[];
+  blocked?: Types.ObjectId[];
 }
 
 const userSchema = new Schema<IUser>(
@@ -91,7 +92,8 @@ const userSchema = new Schema<IUser>(
     newEmailOtp: { type: String },
     temp2faOtp: { type: String },
     is2faEnabled: { type: Boolean, default: false },
-    friends: [{ type: Schema.Types.ObjectId, ref: "User" }]
+    friends: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    blocked: [{ type: Schema.Types.ObjectId, ref: "User" }]
 
   },
   {

@@ -56,7 +56,8 @@ const userSchema = new mongoose_1.Schema({
     newEmailOtp: { type: String },
     temp2faOtp: { type: String },
     is2faEnabled: { type: Boolean, default: false },
-    friends: [{ type: mongoose_1.Schema.Types.ObjectId, ref: "User" }]
+    friends: [{ type: mongoose_1.Schema.Types.ObjectId, ref: "User" }],
+    blocked: [{ type: mongoose_1.Schema.Types.ObjectId, ref: "User" }]
 }, {
     timestamps: true,
     strictQuery: true,

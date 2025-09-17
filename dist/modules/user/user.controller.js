@@ -51,6 +51,9 @@ router.delete("/:userId/hard-delete", (0, authentication_middleware_1.authorizat
 router.patch("/:userId/restore-account", (0, authentication_middleware_1.authorization)(user_authorization_1.endpoint.restoreAccount), user_service_1.default.restoreAccount);
 router.get("/profile", (0, authentication_middleware_1.authorization)(user_authorization_1.endpoint.profile), user_service_1.default.profile);
 router.get("/dashboard", (0, authentication_middleware_1.authorization)(user_authorization_1.endpoint.dashboard), user_service_1.default.dashboard);
+router.patch("/:userId/role", (0, authentication_middleware_1.authorization)(user_authorization_1.endpoint.dashboard), user_service_1.default.changeRole);
+router.post("/:userId/friend-request", (0, authentication_middleware_1.authentication)(), user_service_1.default.sendFriendRequest);
+router.patch("/accept-friend-request/:requestId", (0, authentication_middleware_1.authentication)(), user_service_1.default.acceptFriendRequest);
 router.patch("/profile-image", (0, authentication_middleware_1.authentication)(), (0, cloud_multer_1.cloudFileUpload)({
     validation: cloud_multer_1.fileValidation.image,
     storageAppraoch: cloud_multer_1.storageEnum.disk,

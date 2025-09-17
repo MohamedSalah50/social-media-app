@@ -17,9 +17,11 @@ const otp_1 = require("../../utils/otp");
 const email_event_1 = require("../../utils/events/email.event");
 const repository_1 = require("../../db/repository");
 const post_model_1 = require("../../db/models/post.model");
+const friendRequest_model_1 = require("../../db/models/friendRequest.model");
 class UserService {
     userModel = new user_repository_1.userRepository(user_model_1.UserModel);
     postModel = new repository_1.PostRepository(post_model_1.PostModel);
+    friendRequestModel = new repository_1.FriendRequestRepository(friendRequest_model_1.FriendRequestModel);
     // private tokenModel = new TokenRepository(TokenModel);
     constructor() { }
     profile = async (req, res) => {
@@ -34,12 +36,114 @@ class UserService {
             },
         });
     };
+    sendFriendRequest = async (req, res) => {
+        const { userId } = req.params;
+        const checkUserExist = await this.userModel.findOne({
+            filter: {
+                _id: userId,
+                blocked: { $nin: req.user?._id }
+            }
+        });
+        if (!checkUserExist) {
+            throw new error_response_1.notFoundException("user not found");
+        }
+        const checkRequestExist = await this.friendRequestModel.findOne({
+            filter: {
+                createdBy: req.user?._id,
+                sendTo: userId,
+                acceptedAt: { $exists: false }
+            }
+        });
+        if (checkRequestExist) {
+            throw new error_response_1.conflict("request already sent to the target");
+        }
+        const [friendRequest] = await this.friendRequestModel.create({
+            data: [
+                {
+                    createdBy: req.user?._id,
+                    sendTo: userId
+                }
+            ]
+        }) || [];
+        if (!friendRequest) {
+            throw new error_response_1.BadRequest("fail to send friend request");
+        }
+        return (0, success_response_1.successResponse)({
+            res,
+            data: {
+                user: req.user,
+            },
+        });
+    };
+    acceptFriendRequest = async (req, res) => {
+        const { requestId } = req.params;
+        const friendRequest = await this.friendRequestModel.findOneAndUpdate({
+            filter: {
+                _id: requestId,
+                sendTo: req.user?._id,
+                acceptedAt: { $exists: false }
+            },
+            update: {
+                acceptedAt: new Date()
+            }
+        });
+        if (!friendRequest) {
+            throw new error_response_1.conflict("request not found");
+        }
+        await Promise.all([
+            this.userModel.updateOne({
+                filter: { _id: friendRequest.sendTo },
+                update: {
+                    $addToSet: {
+                        friends: friendRequest.createdBy
+                    }
+                }
+            }),
+            this.userModel.updateOne({
+                filter: { _id: friendRequest.createdBy },
+                update: {
+                    $addToSet: {
+                        friends: friendRequest.sendTo
+                    }
+                }
+            })
+        ]);
+        return (0, success_response_1.successResponse)({
+            res,
+            data: {
+                user: req.user,
+            },
+        });
+    };
     dashboard = async (req, res) => {
         const result = await Promise.allSettled([
-            this.postModel.find({ filter: [] }),
-            this.userModel.find({ filter: [] })
+            this.postModel.find({ filter: {} }),
+            this.userModel.find({ filter: {} })
         ]);
         return (0, success_response_1.successResponse)({ res, data: { result } });
+    };
+    changeRole = async (req, res) => {
+        const { userId } = req.params;
+        const { role } = req.body;
+        const currentAdminLevel = req.user?.role;
+        const filter = {
+            _id: userId,
+            role: {
+                $nin: [
+                    token_security_1.RoleEnum.superAdmin,
+                    currentAdminLevel == token_security_1.RoleEnum.admin ? currentAdminLevel : undefined
+                ]
+            }
+        };
+        const update = { role };
+        const user = await this.userModel.updateOne({
+            filter,
+            update,
+        });
+        if (!user.matchedCount) {
+            throw new error_response_1.notFoundException("user not found");
+        }
+        return (0, success_response_1.successResponse)({ res });
     };
     profileImage = async (req, res) => {
         const { contentType, originalname, } = req.body;

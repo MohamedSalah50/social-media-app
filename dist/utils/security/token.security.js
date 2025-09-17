@@ -17,7 +17,7 @@ var RoleEnum;
 var SignatureLevelEnum;
 (function (SignatureLevelEnum) {
     SignatureLevelEnum["Bearer"] = "Berear";
-    SignatureLevelEnum["System"] = "system";
+    SignatureLevelEnum["System"] = "System";
 })(SignatureLevelEnum || (exports.SignatureLevelEnum = SignatureLevelEnum = {}));
 var tokenEnum;
 (function (tokenEnum) {
