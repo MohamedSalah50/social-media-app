@@ -37,6 +37,11 @@ const postSchema = new mongoose_1.Schema({
     restoredAt: Date,
     restoredBy: { type: mongoose_1.Schema.Types.ObjectId, ref: "User" },
 }, { timestamps: true, strictQuery: true, toObject: { virtuals: true }, toJSON: { virtuals: true } });
+postSchema.virtual("comments", {
+    ref: "Comment",
+    localField: "_id",
+    foreignField: "postId"
+});
 postSchema.pre(["findOneAndUpdate", "updateOne"], function (next) {
     const query = this.getQuery();
     if (query.paranoid === false) {

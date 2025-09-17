@@ -13,7 +13,8 @@ class PostService {
     postModel = new repository_1.PostRepository(post_model_1.PostModel);
     constructor() { }
     postList = async (req, res) => {
-        const posts = await this.postModel.find({
+        const { page, size } = req.query;
+        const posts = await this.postModel.paginate({
             filter: {
                 $or: [
                     { availability: post_model_1.AvailabilityEnum.public },
@@ -28,9 +29,14 @@ class PostService {
                         tags: { $in: [req.user?._id] }
                     }
                 ]
+            },
+            page,
+            size,
+            options: {
+                populate: [{ path: "comments" }]
             }
         });
-        return (0, success_response_1.successResponse)({ res, data: { posts } });
+        return (0, success_response_1.successResponse)({ res, data: { posts, count: posts.length } });
     };
     createPost = async (req, res) => {
         if (req.body.tags?.length &&

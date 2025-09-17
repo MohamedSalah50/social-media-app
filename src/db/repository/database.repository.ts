@@ -45,14 +45,51 @@ export abstract class DatabaseRepository<TDocument> {
     return await doc.exec();
   }
 
+  async paginate({
+    filter,
+    options = {},
+    select,
+    page = "all",
+    size,
+  }: {
+    filter?: RootFilterQuery<TDocument>;
+    select?: ProjectionType<TDocument> | undefined;
+    options?: QueryOptions<TDocument> | undefined;
+    page?: number | "all";
+    size?: number;
+  }): Promise<any> {
+
+    let doc_count: number | undefined = undefined
+    let pages: number = 1
+
+    if (page != "all") {
+      page = Math.floor(page < 1 ? 1 : page);
+      options.limit = Math.floor(size || Number(process.env.PAGE_SIZE) || 2);
+      options.skip = (page - 1) * options.limit;
+      doc_count = await this.model.countDocuments(filter)
+      pages = Math.ceil(doc_count / options.limit)
+    }
+
+
+    const result = await this.find({ filter: filter || {}, select, options });
+
+    return {
+      doc_count, pages: page == "all" ? undefined : pages
+      , current_page: page == "all" ? undefined : page,
+      limit: options.limit, result
+    };
+  }
+
+
+
   async find({
     filter,
     select,
     options,
   }: {
     filter: RootFilterQuery<TDocument>;
-    select?: ProjectionType<TDocument> | null;
-    options?: QueryOptions<TDocument> | null;
+    select?: ProjectionType<TDocument> | undefined;
+    options?: QueryOptions<TDocument> | undefined;
   }): Promise<Lean<TDocument>[] | HydratedDocument<TDocument>[] | []> {
     const docs = this.model.find(filter || {}).select(select || "");
 
@@ -66,6 +103,8 @@ export abstract class DatabaseRepository<TDocument> {
 
     return await docs.exec();
   }
+
+
 
 
   async updateOne({

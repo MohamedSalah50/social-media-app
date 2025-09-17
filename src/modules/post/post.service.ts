@@ -8,6 +8,7 @@ import { v4 as uuid } from "uuid";
 import { deleteFiles, uploadFiles } from "../../utils/multer/s3.config";
 import { LikePostQueryInputsDto } from "./post.dto";
 import { Types, UpdateQuery } from "mongoose";
+import path from "path";
 
 class PostService {
     private userModel = new userRepository(UserModel);
@@ -16,8 +17,10 @@ class PostService {
 
 
 
-    postList = async (req: Request, res: Response) => {
-        const posts = await this.postModel.find({
+    postList = async (req: Request, res: Response): Promise<Response> => {
+
+        const { page, size } = req.query as unknown as { page: number, size: number }
+        const posts = await this.postModel.paginate({
             filter: {
                 $or: [
                     { availability: AvailabilityEnum.public },
@@ -32,10 +35,15 @@ class PostService {
                         tags: { $in: [req.user?._id] }
                     }
                 ]
+            },
+            page,
+            size,
+            options: {
+                populate: [{ path: "comments" }]
             }
         })
 
-        return successResponse({ res, data: { posts } })
+        return successResponse({ res, data: { posts, count: posts.length } })
     }
 
 

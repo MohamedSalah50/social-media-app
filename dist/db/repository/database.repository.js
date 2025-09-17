@@ -16,6 +16,23 @@ class DatabaseRepository {
         }
         return await doc.exec();
     }
+    async paginate({ filter, options = {}, select, page = "all", size, }) {
+        let doc_count = undefined;
+        let pages = 1;
+        if (page != "all") {
+            page = Math.floor(page < 1 ? 1 : page);
+            options.limit = Math.floor(size || Number(process.env.PAGE_SIZE) || 2);
+            options.skip = (page - 1) * options.limit;
+            doc_count = await this.model.countDocuments(filter);
+            pages = Math.ceil(doc_count / options.limit);
+        }
+        const result = await this.find({ filter: filter || {}, select, options });
+        return {
+            doc_count, pages: page == "all" ? undefined : pages,
+            current_page: page == "all" ? undefined : page,
+            limit: options.limit, result
+        };
+    }
     async find({ filter, select, options, }) {
         const docs = this.model.find(filter || {}).select(select || "");
         if (options?.lean) {

@@ -4,11 +4,11 @@ import { UserModel } from "./models/user.model";
 
 export const connectDb = async (): Promise<void> => {
     try {
-        const result = await connect(process.env.MONGO_URI as string, {
+        await connect(process.env.MONGO_URI as string, {
             serverSelectionTimeoutMS: 3000
         });
         await UserModel.syncIndexes();
-        console.log(result.models);
+        // console.log(result.models);
         console.log("Connected to MongoDB🚀");
     } catch (error) {
         console.log("db connection failed❌");
