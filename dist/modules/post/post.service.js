@@ -33,7 +33,11 @@ class PostService {
             page,
             size,
             options: {
-                populate: [{ path: "comments" }]
+                populate: [{
+                        path: "comments",
+                        match: { commentId: { $exists: false } },
+                        populate: [{ path: "reply", justOne: true }]
+                    }]
             }
         });
         return (0, success_response_1.successResponse)({ res, data: { posts, count: posts.length } });

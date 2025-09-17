@@ -5,5 +5,6 @@ const token_security_1 = require("../../utils/security/token.security");
 exports.endpoint = {
     profile: [token_security_1.RoleEnum.user, token_security_1.RoleEnum.admin],
     restoreAccount: [token_security_1.RoleEnum.admin],
-    hardDelete: [token_security_1.RoleEnum.admin]
+    hardDelete: [token_security_1.RoleEnum.admin],
+    dashboard: [token_security_1.RoleEnum.admin, token_security_1.RoleEnum.superAdmin]
 };

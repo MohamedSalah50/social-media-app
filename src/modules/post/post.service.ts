@@ -8,7 +8,6 @@ import { v4 as uuid } from "uuid";
 import { deleteFiles, uploadFiles } from "../../utils/multer/s3.config";
 import { LikePostQueryInputsDto } from "./post.dto";
 import { Types, UpdateQuery } from "mongoose";
-import path from "path";
 
 class PostService {
     private userModel = new userRepository(UserModel);
@@ -39,7 +38,11 @@ class PostService {
             page,
             size,
             options: {
-                populate: [{ path: "comments" }]
+                populate: [{
+                    path: "comments",
+                    match: { commentId: { $exists: false } },
+                    populate: [{ path: "reply", justOne: true }]
+                }]
             }
         })
 

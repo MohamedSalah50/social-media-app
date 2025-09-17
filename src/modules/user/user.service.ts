@@ -35,9 +35,12 @@ import { decryptEncryption, generateEncryption } from "../../utils/security/encr
 import { compareHash, generateHash } from "../../utils/security/hash.security";
 import { generateOtp } from "../../utils/otp";
 import { emailEmitter } from "../../utils/events/email.event";
+import { PostRepository } from "../../db/repository";
+import { PostModel } from "../../db/models/post.model";
 
 class UserService {
   private userModel = new userRepository(UserModel);
+  private postModel = new PostRepository(PostModel);
   // private tokenModel = new TokenRepository(TokenModel);
   constructor() { }
   profile = async (req: Request, res: Response): Promise<Response> => {
@@ -53,6 +56,18 @@ class UserService {
       },
     });
   };
+
+
+  dashboard = async (req: Request, res: Response): Promise<Response> => {
+
+
+    const result = await Promise.allSettled([
+      this.postModel.find({ filter: [] }),
+      this.userModel.find({ filter: [] })
+    ])
+    return successResponse({ res, data: { result } });
+  };
+
 
   profileImage = async (req: Request, res: Response): Promise<Response> => {
     const {

@@ -12,6 +12,7 @@ var RoleEnum;
 (function (RoleEnum) {
     RoleEnum["user"] = "user";
     RoleEnum["admin"] = "admin";
+    RoleEnum["superAdmin"] = "super-admin";
 })(RoleEnum || (exports.RoleEnum = RoleEnum = {}));
 var SignatureLevelEnum;
 (function (SignatureLevelEnum) {
@@ -39,6 +40,7 @@ exports.verifyToken = verifyToken;
 const detectSignatureLevel = async (role = RoleEnum.user) => {
     let signatureLevel = SignatureLevelEnum.Bearer;
     switch (role) {
+        case RoleEnum.superAdmin:
         case RoleEnum.admin:
             signatureLevel = SignatureLevelEnum.System;
             break;

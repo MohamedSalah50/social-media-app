@@ -15,8 +15,11 @@ const encryption_security_1 = require("../../utils/security/encryption.security"
 const hash_security_1 = require("../../utils/security/hash.security");
 const otp_1 = require("../../utils/otp");
 const email_event_1 = require("../../utils/events/email.event");
+const repository_1 = require("../../db/repository");
+const post_model_1 = require("../../db/models/post.model");
 class UserService {
     userModel = new user_repository_1.userRepository(user_model_1.UserModel);
+    postModel = new repository_1.PostRepository(post_model_1.PostModel);
     // private tokenModel = new TokenRepository(TokenModel);
     constructor() { }
     profile = async (req, res) => {
@@ -30,6 +33,13 @@ class UserService {
                 user: req.user,
             },
         });
+    };
+    dashboard = async (req, res) => {
+        const result = await Promise.allSettled([
+            this.postModel.find({ filter: [] }),
+            this.userModel.find({ filter: [] })
+        ]);
+        return (0, success_response_1.successResponse)({ res, data: { result } });
     };
     profileImage = async (req, res) => {
         const { contentType, originalname, } = req.body;

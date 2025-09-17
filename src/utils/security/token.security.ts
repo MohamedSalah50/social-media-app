@@ -9,7 +9,8 @@ import { TokenRepository } from "../../db/repository/token.repository";
 
 export enum RoleEnum {
     user = "user",
-    admin = "admin"
+    admin = "admin",
+    superAdmin = "super-admin"
 }
 
 export enum SignatureLevelEnum {
@@ -50,6 +51,7 @@ export const detectSignatureLevel = async (role: RoleEnum = RoleEnum.user): Prom
     let signatureLevel: SignatureLevelEnum = SignatureLevelEnum.Bearer
 
     switch (role) {
+        case RoleEnum.superAdmin:
         case RoleEnum.admin:
             signatureLevel = SignatureLevelEnum.System
             break;

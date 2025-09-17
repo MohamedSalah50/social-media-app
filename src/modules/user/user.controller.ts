@@ -38,6 +38,7 @@ router.patch(
 );
 
 router.get("/profile", authorization(endpoint.profile), UserService.profile);
+router.get("/dashboard", authorization(endpoint.dashboard), UserService.dashboard);
 router.patch(
   "/profile-image",
   authentication(),
