@@ -56,6 +56,7 @@ class PostService {
         const post = await this.postModel.findOne({
             filter: {
                 _id: postId,
+                freezedAt: { $exists: false },
                 $or: [
                     { availability: AvailabilityEnum.public },
                     {

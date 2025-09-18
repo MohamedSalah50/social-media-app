@@ -7,6 +7,9 @@ import commentService from "./comment.service";
 
 const router = Router({ mergeParams: true });
 
+router.get("/:commentId", authentication(), commentService.getCommentById)
+
+router.get("/:commentId/comment-with-reply", authentication(), commentService.getCommentWithReplies)
 
 router.post("/", authentication(),
     cloudFileUpload({ validation: fileValidation.image }).array("attachments", 2),

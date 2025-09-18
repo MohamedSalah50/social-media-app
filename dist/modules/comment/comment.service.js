@@ -14,6 +14,20 @@ class CommentService {
     postModel = new repository_1.PostRepository(post_model_1.PostModel);
     commentModel = new repository_1.commentRepository(comment_model_1.CommentModel);
     constructor() { }
+    getCommentById = async (req, res) => {
+        const { commentId } = req.params;
+        const comment = await this.commentModel.findOne({
+            filter: {
+                _id: commentId,
+                createdBy: req.user?._id,
+                freezedAt: { $exists: false }
+            }
+        });
+        if (!comment) {
+            throw new error_response_1.notFoundException("comment not found");
+        }
+        return (0, success_response_1.successResponse)({ res, data: comment });
+    };
     createComment = async (req, res) => {
         const { postId } = req.params;
         const post = await this.postModel.findOne({
@@ -208,6 +222,25 @@ class CommentService {
             throw new error_response_1.BadRequest("fail to create this comment");
         }
         return (0, success_response_1.successResponse)({ res, statusCode: 201 });
+    };
+    getCommentWithReplies = async (req, res) => {
+        const { commentId } = req.params;
+        const comment = await this.commentModel.findOne({
+            filter: { _id: commentId, freezedAt: { $exists: false } },
+        });
+        if (!comment) {
+            throw new error_response_1.notFoundException("comment not found");
+        }
+        const replies = await this.commentModel.find({
+            filter: { commentId: comment._id, freezedAt: { $exists: false } },
+        });
+        return (0, success_response_1.successResponse)({
+            res,
+            data: {
+                ...comment.toObject(),
+                reply: replies,
+            },
+        });
     };
     freezeComment = async (req, res) => {
         const { commentId } = req.params;

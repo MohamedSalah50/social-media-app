@@ -15,6 +15,28 @@ class CommentService {
     private commentModel = new commentRepository(CommentModel);
     constructor() { }
 
+
+
+    getCommentById = async (req: Request, res: Response): Promise<Response> => {
+        const { commentId } = req.params as unknown as { commentId: Types.ObjectId };
+
+        const comment = await this.commentModel.findOne({
+            filter: {
+                _id: commentId,
+                createdBy: req.user?._id,
+                freezedAt: { $exists: false }
+            }
+        });
+
+        if (!comment) {
+            throw new notFoundException("comment not found");
+        }
+
+        return successResponse({ res, data: comment });
+    };
+
+
+
     createComment = async (req: Request, res: Response): Promise<Response> => {
         const { postId } = req.params as unknown as { postId: Types.ObjectId }
 
@@ -252,6 +274,34 @@ class CommentService {
 
         return successResponse({ res, statusCode: 201 })
     }
+
+
+    getCommentWithReplies = async (req: Request, res: Response): Promise<Response> => {
+        const { commentId } = req.params as unknown as { commentId: Types.ObjectId };
+
+        const comment = await this.commentModel.findOne({
+            filter: { _id: commentId, freezedAt: { $exists: false } },
+        });
+
+        if (!comment) {
+            throw new notFoundException("comment not found");
+        }
+
+        const replies = await this.commentModel.find({
+            filter: { commentId: comment._id, freezedAt: { $exists: false } },
+        });
+
+        return successResponse({
+            res,
+            data: {
+                ...comment.toObject(),
+                reply: replies,
+            },
+        });
+    };
+
+
+
 
 
     freezeComment = async (req: Request, res: Response): Promise<Response> => {

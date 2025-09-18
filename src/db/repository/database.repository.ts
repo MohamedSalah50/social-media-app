@@ -29,7 +29,7 @@ export abstract class DatabaseRepository<TDocument> {
     return await this.model.create(data, options);
   }
 
-  async findOne({
+ async findOne({
     filter,
     select,
     options,
@@ -44,6 +44,7 @@ export abstract class DatabaseRepository<TDocument> {
     }
     return await doc.exec();
   }
+
 
   async paginate({
     filter,
