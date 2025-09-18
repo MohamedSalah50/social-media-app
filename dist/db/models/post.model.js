@@ -62,4 +62,11 @@ postSchema.post("save", async function (doc, save) {
         }
     }
 });
+// postSchema.post("deleteOne", { document: true, query: false }, async function (doc) {
+//     await model("Comment").deleteMany({ filter: { postId: doc._id } });
+// });
+postSchema.post("deleteOne", { document: false, query: true }, async function () {
+    const filter = this.getFilter();
+    await (0, mongoose_1.model)("Comment").deleteMany({ postId: filter._id });
+});
 exports.PostModel = mongoose_1.models.Post || (0, mongoose_1.model)("Post", postSchema);

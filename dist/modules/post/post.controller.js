@@ -49,4 +49,6 @@ router.get("/", (0, authentication_middleware_1.authentication)(), post_service_
 router.post("/create-post", (0, authentication_middleware_1.authentication)(), (0, cloud_multer_1.cloudFileUpload)({ validation: cloud_multer_1.fileValidation.image }).array("attachments", 2), (0, validation_middleware_1.validation)(validators.createPost), post_service_1.default.createPost);
 router.patch("/:postId", (0, authentication_middleware_1.authentication)(), (0, cloud_multer_1.cloudFileUpload)({ validation: cloud_multer_1.fileValidation.image }).array("attachments", 2), (0, validation_middleware_1.validation)(validators.updatePost), post_service_1.default.updatePost);
 router.patch("/:postId/like", (0, authentication_middleware_1.authentication)(), (0, validation_middleware_1.validation)(validators.likePost), post_service_1.default.likePost);
+router.delete("/:postId/freeze", (0, authentication_middleware_1.authentication)(), post_service_1.default.freezePost);
+router.delete("/:postId/hard-delete", (0, authentication_middleware_1.authentication)(), post_service_1.default.hardDeletePost);
 exports.default = router;

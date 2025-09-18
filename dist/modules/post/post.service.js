@@ -146,5 +146,40 @@ class PostService {
         }
         return (0, success_response_1.successResponse)({ res });
     };
+    freezePost = async (req, res) => {
+        const { postId } = req.params;
+        const post = await this.postModel.findOne({
+            filter: { _id: postId, createdBy: req.user?._id }
+        });
+        if (!post) {
+            throw new error_response_1.notFoundException("post not found or you are not the owner of this post");
+        }
+        const freezedPost = await this.postModel.updateOne({
+            filter: { _id: postId },
+            update: {
+                freezedAt: new Date(),
+                freezedBy: req.user?._id,
+                $add: { __v: 1 },
+                $unset: { restoredAt: 1, restoredBy: 1 },
+            }
+        });
+        if (!freezedPost.matchedCount) {
+            throw new error_response_1.notFoundException("fail to freeze this post");
+        }
+        return (0, success_response_1.successResponse)({ res });
+    };
+    hardDeletePost = async (req, res) => {
+        const { postId } = req.params;
+        const deletedPost = await this.postModel.deleteOne({
+            filter: { _id: postId, createdBy: req.user?._id, freezedAt: { $exists: true } },
+        });
+        if (!deletedPost) {
+            throw new error_response_1.notFoundException("post not found or you are not the owner of this post");
+        }
+        if (!deletedPost.deletedCount) {
+            throw new error_response_1.notFoundException("fail to delete this post");
+        }
+        return (0, success_response_1.successResponse)({ res });
+    };
 }
 exports.default = new PostService();

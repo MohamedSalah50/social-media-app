@@ -56,11 +56,11 @@ const commentSchema = new Schema<IComment>({
     });
 
 
-    commentSchema.virtual("reply",{
-        localField:"_id",
-        foreignField:"commentId",
-        ref:"Comment"
-    })
+commentSchema.virtual("reply", {
+    localField: "_id",
+    foreignField: "commentId",
+    ref: "Comment"
+})
 
 
 commentSchema.pre(["findOneAndUpdate", "updateOne"], function (next) {
@@ -83,6 +83,14 @@ commentSchema.post("save", async function (doc, save) {
         }
     }
 })
+
+commentSchema.post("deleteOne", { query: true, document: false }, async function () {
+    const filter = this.getFilter();
+    if (filter._id) {
+        await model("Comment").deleteMany({ commentId: filter._id });
+    }
+});
+
 
 
 export const CommentModel = models.Comment || model<IComment>("Comment", commentSchema);

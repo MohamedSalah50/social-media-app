@@ -156,6 +156,59 @@ class CommentService {
         return successResponse({ res, statusCode: 201 })
     }
 
+
+    freezeComment = async (req: Request, res: Response): Promise<Response> => {
+        const { commentId } = req.params as unknown as { commentId: Types.ObjectId };
+
+        const comment = await this.commentModel.findOne({
+            filter: {
+                _id: commentId,
+                createdBy: req.user?._id
+            }
+        });
+
+        if (!comment) {
+            throw new notFoundException("comment not found or you are not the owner of this comment");
+        }
+
+        const freezedComment = await this.commentModel.updateOne({
+            filter: { _id: commentId },
+            update: {
+                freezedAt: new Date(),
+                freezedBy: req.user?._id,
+                $add: { __v: 1 },
+                $unset: { restoredAt: 1, restoredBy: 1 }
+            }
+        })
+
+        if (!freezedComment.matchedCount) {
+            throw new notFoundException("fail to freeze this comment");
+        }
+
+        return successResponse({ res });
+    }
+
+
+    hardDeleteComment = async (req: Request, res: Response): Promise<Response> => {
+        const { commentId } = req.params as unknown as { commentId: Types.ObjectId };
+
+        const deletedComment = await this.commentModel.deleteOne({
+            filter: {
+                _id: commentId,
+                createdBy: req.user?._id,
+                freezedAt: { $exists: true }
+            }
+        });
+
+        if (!deletedComment?.deletedCount) {
+            throw new notFoundException("comment not found or you are not the owner of this comment");
+        }
+
+        return successResponse({ res });
+    }
+
+
+
 }
 
 export default new CommentService();

@@ -177,6 +177,58 @@ class PostService {
 
         return successResponse({ res })
     }
+
+
+    freezePost = async (req: Request, res: Response): Promise<Response> => {
+        const { postId } = req.params as unknown as { postId: Types.ObjectId };
+
+        const post = await this.postModel.findOne({
+            filter: { _id: postId, createdBy: req.user?._id }
+        })
+
+        if (!post) {
+            throw new notFoundException("post not found or you are not the owner of this post")
+        }
+
+        const freezedPost = await this.postModel.updateOne({
+            filter: { _id: postId },
+            update: {
+                freezedAt: new Date(),
+                freezedBy: req.user?._id,
+                $add: { __v: 1 },
+                $unset: { restoredAt: 1, restoredBy: 1 },
+            }
+        })
+
+        if (!freezedPost.matchedCount) {
+            throw new notFoundException("fail to freeze this post")
+        }
+
+        return successResponse({ res })
+    }
+
+
+    hardDeletePost = async (req: Request, res: Response): Promise<Response> => {
+        const { postId } = req.params as unknown as { postId: Types.ObjectId };
+
+
+        const deletedPost = await this.postModel.deleteOne({
+            filter: { _id: postId, createdBy: req.user?._id , freezedAt: { $exists: true } },
+        })
+
+        if (!deletedPost) {
+            throw new notFoundException("post not found or you are not the owner of this post")
+        }
+
+        if (!deletedPost.deletedCount) {
+            throw new notFoundException("fail to delete this post")
+        }
+
+
+
+        return successResponse({ res })
+    }
+
 }
 
 export default new PostService();

@@ -8,7 +8,7 @@ import { commentRouter } from "../comment";
 
 const router = Router();
 
-router.use("/:postId/comment",commentRouter)
+router.use("/:postId/comment", commentRouter)
 
 router.get("/", authentication(), postService.postList);
 
@@ -22,5 +22,8 @@ router.patch("/:postId", authentication(),
     validation(validators.updatePost), postService.updatePost)
 
 router.patch("/:postId/like", authentication(), validation(validators.likePost), postService.likePost)
+
+router.delete("/:postId/freeze", authentication(), postService.freezePost)
+router.delete("/:postId/hard-delete", authentication(), postService.hardDeletePost)
 
 export default router;

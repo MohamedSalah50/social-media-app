@@ -48,4 +48,10 @@ commentSchema.post("save", async function (doc, save) {
         }
     }
 });
+commentSchema.post("deleteOne", { query: true, document: false }, async function () {
+    const filter = this.getFilter();
+    if (filter._id) {
+        await (0, mongoose_1.model)("Comment").deleteMany({ commentId: filter._id });
+    }
+});
 exports.CommentModel = mongoose_1.models.Comment || (0, mongoose_1.model)("Comment", commentSchema);

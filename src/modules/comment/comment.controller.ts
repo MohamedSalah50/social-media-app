@@ -21,4 +21,7 @@ router.post("/:commentId/create-reply-on-comment", authentication(),
     commentService.createReplyOnComment
 )
 
+router.delete("/:commentId/freeze", authentication(), commentService.freezeComment)
+router.delete("/:commentId/hard-delete", authentication(), commentService.hardDeleteComment)
+
 export default router;
