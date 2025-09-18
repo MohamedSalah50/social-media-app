@@ -129,6 +129,37 @@ class UserService {
         }
         return (0, success_response_1.successResponse)({ res, message: "friend request deleted" });
     };
+    unfriend = async (req, res) => {
+        const { userId } = req.params;
+        if (req.user?._id == userId) {
+            throw new error_response_1.BadRequest("you cannot unfriend yourself");
+        }
+        const isFriend = await this.userModel.findOne({
+            filter: {
+                _id: req.user?._id,
+                friends: userId,
+            }
+        });
+        if (!isFriend) {
+            throw new error_response_1.BadRequest("user is not your friend");
+        }
+        await Promise.all([
+            this.userModel.findOneAndUpdate({
+                filter: { _id: req.user?._id },
+                update: { $pull: { friends: userId } },
+            }),
+            this.userModel.findOneAndUpdate({
+                filter: { _id: userId },
+                update: { $pull: { friends: req.user?._id } },
+            }),
+        ]);
+        return (0, success_response_1.successResponse)({
+            res,
+            data: {
+                user: req.user,
+            },
+        });
+    };
     dashboard = async (req, res) => {
         const result = await Promise.allSettled([
             this.postModel.find({ filter: {} }),

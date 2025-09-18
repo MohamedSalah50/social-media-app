@@ -44,6 +44,7 @@ router.post("/:userId/friend-request", authentication(), UserService.sendFriendR
 router.patch("/accept-friend-request/:requestId", authentication(), UserService.acceptFriendRequest);
 router.patch("/delete-friend-request/:requestId", authentication(), UserService.deleteFriendRequest);
 router.patch("/block-user/:userId", authentication(), UserService.blockUser);
+router.delete("/unfirend-user/:userId", authentication(), UserService.unfriend);
 router.patch(
   "/profile-image",
   authentication(),
