@@ -161,6 +161,24 @@ class UserService {
   };
 
 
+  deleteFriendRequest = async (req: Request, res: Response): Promise<Response> => {
+
+    const { requestId } = req.params as unknown as { requestId: Types.ObjectId };
+
+    const deleteRequest = await this.friendRequestModel.deleteOne({
+      filter: {
+        createdBy: req.user?._id,
+        sendTo: requestId,
+        acceptedAt: { $exists: false }
+      }
+    })
+    if (!deleteRequest.deletedCount) {
+      throw new BadRequest("fail to delete friend request")
+    }
+    return successResponse({ res, message: "friend request deleted" })
+  }
+
+
   dashboard = async (req: Request, res: Response): Promise<Response> => {
 
 

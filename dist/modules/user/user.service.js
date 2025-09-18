@@ -115,6 +115,20 @@ class UserService {
             },
         });
     };
+    deleteFriendRequest = async (req, res) => {
+        const { requestId } = req.params;
+        const deleteRequest = await this.friendRequestModel.deleteOne({
+            filter: {
+                createdBy: req.user?._id,
+                sendTo: requestId,
+                acceptedAt: { $exists: false }
+            }
+        });
+        if (!deleteRequest.deletedCount) {
+            throw new error_response_1.BadRequest("fail to delete friend request");
+        }
+        return (0, success_response_1.successResponse)({ res, message: "friend request deleted" });
+    };
     dashboard = async (req, res) => {
         const result = await Promise.allSettled([
             this.postModel.find({ filter: {} }),

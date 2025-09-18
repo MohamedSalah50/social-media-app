@@ -42,6 +42,7 @@ router.get("/dashboard", authorization(endpoint.dashboard), UserService.dashboar
 router.patch("/:userId/role", authorization(endpoint.dashboard), UserService.changeRole);
 router.post("/:userId/friend-request", authentication(), UserService.sendFriendRequest);
 router.patch("/accept-friend-request/:requestId", authentication(), UserService.acceptFriendRequest);
+router.patch("/delete-friend-request/:requestId", authentication(), UserService.deleteFriendRequest);
 router.patch(
   "/profile-image",
   authentication(),
