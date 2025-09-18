@@ -11,6 +11,7 @@ const router = Router();
 router.use("/:postId/comment", commentRouter)
 
 router.get("/", authentication(), postService.postList);
+router.get("/:postId", authentication(), postService.getPostById);
 
 router.post("/create-post", authentication(),
     cloudFileUpload({ validation: fileValidation.image }).array("attachments", 2),

@@ -50,6 +50,33 @@ class PostService {
     }
 
 
+    getPostById = async (req: Request, res: Response): Promise<Response> => {
+        const { postId } = req.params as unknown as { postId: Types.ObjectId };
+
+        const post = await this.postModel.findOne({
+            filter: {
+                _id: postId,
+                $or: [
+                    { availability: AvailabilityEnum.public },
+                    {
+                        availability: AvailabilityEnum.friends,
+                        createdBy: { $in: [...(req.user?.friends || []), req.user?._id] }
+                    },
+                    { availability: AvailabilityEnum.onlyMe, createdBy: req.user?._id },
+                    { tags: { $in: [req.user?._id] } }
+                ]
+            },
+        });
+
+        if (!post) {
+            throw new notFoundException("post not found");
+        }
+
+        return successResponse({ res, data: post });
+    };
+
+
+
     createPost = async (req: Request, res: Response): Promise<Response> => {
         if (req.body.tags?.length &&
             (await this.userModel.find({ filter: { _id: { $in: req.body.tags } } })).length !== req.body.tags.length) {
@@ -213,7 +240,7 @@ class PostService {
 
 
         const deletedPost = await this.postModel.deleteOne({
-            filter: { _id: postId, createdBy: req.user?._id , freezedAt: { $exists: true } },
+            filter: { _id: postId, createdBy: req.user?._id, freezedAt: { $exists: true } },
         })
 
         if (!deletedPost) {

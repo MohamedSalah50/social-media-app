@@ -81,6 +81,103 @@ class CommentService {
     }
 
 
+    updateComment = async (req: Request, res: Response): Promise<Response> => {
+        const { postId, commentId } = req.params as unknown as {
+            postId: Types.ObjectId,
+            commentId: Types.ObjectId
+        };
+
+        const post = await this.postModel.findOne({
+            filter: {
+                _id: postId,
+                allowComments: AllowCommentsEnum.allow,
+                $or: [
+                    { availability: AvailabilityEnum.public },
+                    {
+                        availability: AvailabilityEnum.friends,
+                        createdBy: { $in: [...(req.user?.friends || []), req.user?._id] }
+                    },
+                    {
+                        availability: AvailabilityEnum.onlyMe,
+                        createdBy: req.user?._id
+                    },
+                    {
+                        tags: { $in: [req.user?._id] }
+                    }
+                ]
+            }
+        });
+
+        if (!post) {
+            throw new notFoundException("no matching post");
+        }
+
+        const comment = await this.commentModel.findOne({
+            filter: { _id: commentId, postId, createdBy: req.user?._id }
+        });
+
+        if (!comment) {
+            throw new notFoundException("comment not found or not owned by you");
+        }
+
+        if (req.body.tags?.length &&
+            (await this.userModel.find({ filter: { _id: { $in: req.body.tags } } })).length !== req.body.tags.length) {
+            throw new notFoundException("some of the mentioned users does not exist");
+        }
+
+        let attachments: string[] = [];
+        if (req.files?.length) {
+            attachments = await uploadFiles({
+                storageAppraoch: storageEnum.memory,
+                path: `users/${req.user?._id}/post/${post.assetsFolderId}/comment`,
+                files: req.files as Express.Multer.File[]
+            });
+        }
+
+        const updatedComment = await this.commentModel.findOneAndUpdate({
+            filter: { _id: comment._id },
+            update: [{
+                $set: {
+                    content: req.body.content ?? comment.content,
+                    attachments: {
+                        $setUnion: [{
+                            $setDifference: ["$attachments", req.body.removedAttachments || []]
+                        }, attachments]
+                    },
+                    tags: {
+                        $setUnion: [{
+                            $setDifference: [
+                                "$tags",
+                                req.body.removedTags?.map((tag: string) =>
+                                    Types.ObjectId.createFromHexString(tag)
+                                ) || []
+                            ]
+                        },
+                        req.body.tags?.map((tag: string) =>
+                            Types.ObjectId.createFromHexString(tag)
+                        ) || []]
+                    }
+                }
+            }]
+        });
+
+        if (!updatedComment) {
+            if (attachments.length) {
+                await deleteFiles({ urls: attachments });
+            }
+            throw new BadRequest("fail to update this comment");
+        } else {
+            if (req.body.removedAttachments?.length) {
+                await deleteFiles({ urls: req.body.removedAttachments });
+            }
+        }
+
+        return successResponse({ res });
+    };
+
+
+
+
     createReplyOnComment = async (req: Request, res: Response): Promise<Response> => {
         const { postId, commentId } = req.params as unknown as { postId: Types.ObjectId, commentId: Types.ObjectId }
 

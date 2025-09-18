@@ -42,6 +42,27 @@ class PostService {
         });
         return (0, success_response_1.successResponse)({ res, data: { posts, count: posts.length } });
     };
+    getPostById = async (req, res) => {
+        const { postId } = req.params;
+        const post = await this.postModel.findOne({
+            filter: {
+                _id: postId,
+                $or: [
+                    { availability: post_model_1.AvailabilityEnum.public },
+                    {
+                        availability: post_model_1.AvailabilityEnum.friends,
+                        createdBy: { $in: [...(req.user?.friends || []), req.user?._id] }
+                    },
+                    { availability: post_model_1.AvailabilityEnum.onlyMe, createdBy: req.user?._id },
+                    { tags: { $in: [req.user?._id] } }
+                ]
+            },
+        });
+        if (!post) {
+            throw new error_response_1.notFoundException("post not found");
+        }
+        return (0, success_response_1.successResponse)({ res, data: post });
+    };
     createPost = async (req, res) => {
         if (req.body.tags?.length &&
             (await this.userModel.find({ filter: { _id: { $in: req.body.tags } } })).length !== req.body.tags.length) {

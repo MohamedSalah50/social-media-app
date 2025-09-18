@@ -14,6 +14,10 @@ router.post("/", authentication(),
     commentService.createComment
 )
 
+router.patch("/:commentId/update", authentication(),
+    cloudFileUpload({ validation: fileValidation.image }).array("attachments", 2),
+    validation(validators.updateComment), commentService.updateComment)
+
 
 router.post("/:commentId/create-reply-on-comment", authentication(),
     cloudFileUpload({ validation: fileValidation.image }).array("attachments", 2),

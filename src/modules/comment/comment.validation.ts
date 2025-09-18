@@ -33,3 +33,30 @@ export const createReplyOnComment = {
 
     body: createComment.body
 }
+
+
+
+export const updateComment = {
+    params: z.strictObject({
+        postId: generalFields.id,
+        commentId: generalFields.id
+    }),
+    body: z.strictObject({
+        content: z.string().min(2).max(5000).optional(),
+        attachments: z.array(generalFields.file(fileValidation.image)).max(2).optional(),
+        tags: z.array(generalFields.id).max(10).optional(),
+        removedAttachments: z.array(z.string()).max(2).optional(),
+        removedTags: z.array(generalFields.id).max(10).optional(),
+    }).superRefine((data, ctx) => {
+        if (!Object.values(data).length) {
+            ctx.addIssue({ code: "custom", message: "at least one field is required" })
+        }
+
+        if (!data.attachments?.length && !data.content) {
+            ctx.addIssue({ code: "custom", message: "content or attachments is required", path: ["content"] })
+        }
+        if (data.tags?.length && data.tags.length !== [...new Set(data.tags)].length) {
+            ctx.addIssue({ code: "custom", message: "tags must be unique", path: ["tags"] })
+        }
+    })
+}

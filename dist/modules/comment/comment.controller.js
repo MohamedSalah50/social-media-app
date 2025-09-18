@@ -44,6 +44,7 @@ const validators = __importStar(require("./comment.validation"));
 const comment_service_1 = __importDefault(require("./comment.service"));
 const router = (0, express_1.Router)({ mergeParams: true });
 router.post("/", (0, authentication_middleware_1.authentication)(), (0, cloud_multer_1.cloudFileUpload)({ validation: cloud_multer_1.fileValidation.image }).array("attachments", 2), (0, validation_middleware_1.validation)(validators.createComment), comment_service_1.default.createComment);
+router.patch("/:commentId/update", (0, authentication_middleware_1.authentication)(), (0, cloud_multer_1.cloudFileUpload)({ validation: cloud_multer_1.fileValidation.image }).array("attachments", 2), (0, validation_middleware_1.validation)(validators.updateComment), comment_service_1.default.updateComment);
 router.post("/:commentId/create-reply-on-comment", (0, authentication_middleware_1.authentication)(), (0, cloud_multer_1.cloudFileUpload)({ validation: cloud_multer_1.fileValidation.image }).array("attachments", 2), (0, validation_middleware_1.validation)(validators.createReplyOnComment), comment_service_1.default.createReplyOnComment);
 router.delete("/:commentId/freeze", (0, authentication_middleware_1.authentication)(), comment_service_1.default.freezeComment);
 router.delete("/:commentId/hard-delete", (0, authentication_middleware_1.authentication)(), comment_service_1.default.hardDeleteComment);
