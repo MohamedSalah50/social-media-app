@@ -43,6 +43,7 @@ router.patch("/:userId/role", authorization(endpoint.dashboard), UserService.cha
 router.post("/:userId/friend-request", authentication(), UserService.sendFriendRequest);
 router.patch("/accept-friend-request/:requestId", authentication(), UserService.acceptFriendRequest);
 router.patch("/delete-friend-request/:requestId", authentication(), UserService.deleteFriendRequest);
+router.patch("/block-user/:userId", authentication(), UserService.blockUser);
 router.patch(
   "/profile-image",
   authentication(),

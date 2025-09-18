@@ -159,6 +159,23 @@ class UserService {
         }
         return (0, success_response_1.successResponse)({ res });
     };
+    blockUser = async (req, res) => {
+        const { userId } = req.params;
+        if (req.user?._id == userId) {
+            throw new error_response_1.BadRequest("you can't block yourself");
+        }
+        const user = await this.userModel.findOneAndUpdate({
+            filter: {
+                _Id: userId,
+                blocked: { $nin: req.user?._id }
+            },
+            update: { $addToSet: { blocked: userId }, $pull: { friends: userId } }
+        });
+        if (!user) {
+            throw new error_response_1.notFoundException("user not found");
+        }
+        return (0, success_response_1.successResponse)({ res, message: "user blocked" });
+    };
     profileImage = async (req, res) => {
         const { contentType, originalname, } = req.body;
         const { url, Key } = await (0, s3_config_1.createSignedUploadLink)({

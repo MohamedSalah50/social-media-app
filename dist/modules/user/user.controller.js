@@ -55,6 +55,7 @@ router.patch("/:userId/role", (0, authentication_middleware_1.authorization)(use
 router.post("/:userId/friend-request", (0, authentication_middleware_1.authentication)(), user_service_1.default.sendFriendRequest);
 router.patch("/accept-friend-request/:requestId", (0, authentication_middleware_1.authentication)(), user_service_1.default.acceptFriendRequest);
 router.patch("/delete-friend-request/:requestId", (0, authentication_middleware_1.authentication)(), user_service_1.default.deleteFriendRequest);
+router.patch("/block-user/:userId", (0, authentication_middleware_1.authentication)(), user_service_1.default.blockUser);
 router.patch("/profile-image", (0, authentication_middleware_1.authentication)(), (0, cloud_multer_1.cloudFileUpload)({
     validation: cloud_multer_1.fileValidation.image,
     storageAppraoch: cloud_multer_1.storageEnum.disk,

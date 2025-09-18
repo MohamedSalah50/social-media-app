@@ -216,6 +216,29 @@ class UserService {
   }
 
 
+  blockUser = async (req: Request, res: Response): Promise<Response> => {
+    const { userId } = req.params as unknown as { userId: Types.ObjectId };
+
+    if (req.user?._id == userId) {
+      throw new BadRequest("you can't block yourself")
+    }
+
+    const user = await this.userModel.findOneAndUpdate({
+      filter: {
+        _Id: userId,
+        blocked: { $nin: req.user?._id }
+      },
+      update: { $addToSet: { blocked: userId }, $pull: { friends: userId } }
+    })
+
+    if (!user) {
+      throw new notFoundException("user not found")
+    }
+
+    return successResponse({ res, message: "user blocked" });
+
+  }
+
   profileImage = async (req: Request, res: Response): Promise<Response> => {
     const {
       contentType,
