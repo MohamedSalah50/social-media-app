@@ -53,10 +53,23 @@ class UserService {
     }
 
     req.user.phone = decryptEncryption({ cipherText: req.user.phone });
+
+    const user = await this.userModel.findById({
+      id: req.user._id as Types.ObjectId,
+      select: "email firstName lastName profilePicture friends",
+      populate: {
+        path: "friends",
+        select: "email firstName lastName profilePicture friends",
+        match: { freezedAt: { $exists: false } },
+      },
+    })
+    if (!user) {
+      throw new notFoundException("user not found")
+    }
     return successResponse<IUserResponse>({
       res,
       data: {
-        user: req.user,
+        user: user as Partial<HUserDocument>,
       },
     });
   };

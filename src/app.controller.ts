@@ -6,12 +6,19 @@ import type { Express, Request, Response, NextFunction } from "express";
 import express from "express";
 import cors from "cors";
 
-import { authRouter, userRouter, postRouter } from "./modules"
+
+import { authRouter, userRouter, postRouter, initio } from "./modules"
 
 import {
   globalErrorHandling,
 } from "./utils/response/error.response";
 import { connectDb } from "./db/connection.db";
+
+
+
+
+
+
 
 const bootstrap = async (): Promise<void> => {
   const port: number | string = process.env.PORT || 5000;
@@ -36,23 +43,13 @@ const bootstrap = async (): Promise<void> => {
   app.use(globalErrorHandling);
 
 
-  //hooks
-  // async function test() {
-  //   try {
-  //     const userModel = new userRepository(UserModel);
-  //     const user = await userModel.findOne({ filter: { gender: GenderEnum.female, paranoid: true } }) as HUserDocument;
-  //     await user.save()
-  //   } catch (error) {
-  //     console.log(error);
-
-  //   }
-  // }
-
-  // test();
-
-  app.listen(port, () => {
+  const httpServer = app.listen(port, () => {
     console.log(`app running on port ${port}😊`);
   });
+
+
+  initio(httpServer);
+
 };
 
 export default bootstrap;

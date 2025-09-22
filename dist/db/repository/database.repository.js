@@ -33,6 +33,13 @@ class DatabaseRepository {
             limit: options.limit, result
         };
     }
+    async findById({ id, options, select, populate, }) {
+        let query = this.model.findById(id, select || null, options || undefined);
+        if (populate) {
+            query = query.populate(populate);
+        }
+        return await query.exec();
+    }
     async find({ filter, select, options, }) {
         const docs = this.model.find(filter || {}).select(select || "");
         if (options?.lean) {

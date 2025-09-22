@@ -29,10 +29,22 @@ class UserService {
             throw new error_response_1.UnAuthorizedException("missing user details");
         }
         req.user.phone = (0, encryption_security_1.decryptEncryption)({ cipherText: req.user.phone });
+        const user = await this.userModel.findById({
+            id: req.user._id,
+            select: "email firstName lastName profilePicture friends",
+            populate: {
+                path: "friends",
+                select: "email firstName lastName profilePicture friends",
+                match: { freezedAt: { $exists: false } },
+            },
+        });
+        if (!user) {
+            throw new error_response_1.notFoundException("user not found");
+        }
         return (0, success_response_1.successResponse)({
             res,
             data: {
-                user: req.user,
+                user: user,
             },
         });
     };

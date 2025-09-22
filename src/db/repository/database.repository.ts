@@ -1,6 +1,7 @@
 import {
   DeleteResult,
   FlattenMaps,
+  PopulateOptions,
   QueryOptions,
   Types,
   UpdateQuery,
@@ -29,7 +30,7 @@ export abstract class DatabaseRepository<TDocument> {
     return await this.model.create(data, options);
   }
 
- async findOne({
+  async findOne({
     filter,
     select,
     options,
@@ -80,6 +81,31 @@ export abstract class DatabaseRepository<TDocument> {
       limit: options.limit, result
     };
   }
+
+
+
+  async findById({
+    id,
+    options,
+    select,
+    populate,
+  }: {
+    id?: Types.ObjectId;
+    select?: string | null;
+    options?: QueryOptions<TDocument> | null;
+    populate?: string | PopulateOptions | (string | PopulateOptions)[];
+  }): Promise<HydratedDocument<TDocument> | Lean<TDocument> | null> {
+    let query = this.model.findById(id, select || null, options || undefined);
+
+    if (populate) {
+      query = query.populate(populate);
+    }
+
+    return await query.exec();
+  }
+
+
+
 
 
 

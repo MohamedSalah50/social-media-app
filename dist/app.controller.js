@@ -25,19 +25,9 @@ const bootstrap = async () => {
     app.use("/user", modules_1.userRouter);
     app.use("/post", modules_1.postRouter);
     app.use(error_response_1.globalErrorHandling);
-    //hooks
-    // async function test() {
-    //   try {
-    //     const userModel = new userRepository(UserModel);
-    //     const user = await userModel.findOne({ filter: { gender: GenderEnum.female, paranoid: true } }) as HUserDocument;
-    //     await user.save()
-    //   } catch (error) {
-    //     console.log(error);
-    //   }
-    // }
-    // test();
-    app.listen(port, () => {
+    const httpServer = app.listen(port, () => {
         console.log(`app running on port ${port}😊`);
     });
+    (0, modules_1.initio)(httpServer);
 };
 exports.default = bootstrap;

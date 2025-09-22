@@ -37,7 +37,7 @@ router.patch(
   UserService.restoreAccount
 );
 
-router.get("/profile", authorization(endpoint.profile), UserService.profile);
+router.get("/", authorization(endpoint.profile), UserService.profile);
 router.get("/dashboard", authorization(endpoint.dashboard), UserService.dashboard);
 router.patch("/:userId/role", authorization(endpoint.dashboard), UserService.changeRole);
 router.post("/:userId/friend-request", authentication(), UserService.sendFriendRequest);

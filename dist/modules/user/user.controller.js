@@ -49,7 +49,7 @@ const router = (0, express_1.Router)();
 router.delete("{/:userId}/freeze-account", (0, authentication_middleware_1.authentication)(), (0, validation_middleware_1.validation)(validators.freezeAccount), user_service_1.default.freezeAccount);
 router.delete("/:userId/hard-delete", (0, authentication_middleware_1.authorization)(user_authorization_1.endpoint.hardDelete), (0, validation_middleware_1.validation)(validators.hardDelete), user_service_1.default.hardDeleteAccount);
 router.patch("/:userId/restore-account", (0, authentication_middleware_1.authorization)(user_authorization_1.endpoint.restoreAccount), user_service_1.default.restoreAccount);
-router.get("/profile", (0, authentication_middleware_1.authorization)(user_authorization_1.endpoint.profile), user_service_1.default.profile);
+router.get("/", (0, authentication_middleware_1.authorization)(user_authorization_1.endpoint.profile), user_service_1.default.profile);
 router.get("/dashboard", (0, authentication_middleware_1.authorization)(user_authorization_1.endpoint.dashboard), user_service_1.default.dashboard);
 router.patch("/:userId/role", (0, authentication_middleware_1.authorization)(user_authorization_1.endpoint.dashboard), user_service_1.default.changeRole);
 router.post("/:userId/friend-request", (0, authentication_middleware_1.authentication)(), user_service_1.default.sendFriendRequest);
