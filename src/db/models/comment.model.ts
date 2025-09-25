@@ -26,7 +26,7 @@ export interface IComment {
 }
 
 
-export type HPostDocument = HydratedDocument<IComment>;
+export type HCommentDocument = HydratedDocument<IComment>;
 
 
 const commentSchema = new Schema<IComment>({

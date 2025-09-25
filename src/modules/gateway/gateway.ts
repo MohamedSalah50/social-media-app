@@ -1,15 +1,17 @@
-import { IAuthSocket } from "./gateway.interface";
+import { connectedSocket, IAuthSocket } from "./gateway.interface";
 import { Server } from "socket.io";
 import { Server as HttpServer } from "node:http";
 import { decodeToken, tokenEnum } from "../../utils/security/token.security";
+import { BadRequest } from "../../utils/response/error.response";
+import { ChatGateway } from "../chat";
+export let io: Server | undefined = undefined;
 
 
 
-export const connectedSocket = new Map<string, string>();
-
+const chatGateway: ChatGateway = new ChatGateway();
 export const initio = async (httpServer: HttpServer) => {
     //initialization socket server
-    const io = new Server(httpServer, {
+    io = new Server(httpServer, {
         cors: {
             origin: "*",
         },
@@ -37,14 +39,25 @@ export const initio = async (httpServer: HttpServer) => {
         socket.on("disconnect", () => {
             const removedUserId = socket.credentials?.user?._id?.toString() as string;
             connectedSocket.delete(removedUserId);
-            io.emit("offlineUser", removedUserId)
+            io?.emit("offlineUser", removedUserId)
         })
     }
 
     io.on("connection", (socket: IAuthSocket) => {
-        disconnect(socket);
-        console.log(socket.id);
+        try {
+            console.log(socket.id);
+            chatGateway.register(socket, getIO());
+            disconnect(socket);
+        } catch (error) {
+            console.log("fail");
+        }
     });
 
 }
 
+export const getIO = () => {
+    if (!io) {
+        throw new BadRequest("Socket server io is not initialized yet!!!")
+    }
+    return io
+}

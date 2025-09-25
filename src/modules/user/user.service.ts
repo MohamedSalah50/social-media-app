@@ -9,9 +9,6 @@ import {
   RoleEnum,
 } from "../../utils/security/token.security";
 import { userRepository } from "../../db/repository/user.repository";
-// import { TokenRepository } from "../../db/repository/token.repository";
-// import { TokenModel } from "../../db/models/token.model";
-// import { ILogoutDto } from "./user.dto";
 import { JwtPayload } from "jsonwebtoken";
 import {
   createSignedUploadLink,
@@ -36,16 +33,17 @@ import { decryptEncryption, generateEncryption } from "../../utils/security/encr
 import { compareHash, generateHash } from "../../utils/security/hash.security";
 import { generateOtp } from "../../utils/otp";
 import { emailEmitter } from "../../utils/events/email.event";
-import { FriendRequestRepository, PostRepository } from "../../db/repository";
+import { chatRepository, FriendRequestRepository, PostRepository } from "../../db/repository";
 import { PostModel } from "../../db/models/post.model";
 import { FilterQuery } from "mongoose";
 import { FriendRequestModel } from "../../db/models/friendRequest.model";
+import { ChatModel } from "../../db/models";
 
 class UserService {
   private userModel = new userRepository(UserModel);
   private postModel = new PostRepository(PostModel);
+  private chatModel = new chatRepository(ChatModel);
   private friendRequestModel = new FriendRequestRepository(FriendRequestModel);
-  // private tokenModel = new TokenRepository(TokenModel);
   constructor() { }
   profile = async (req: Request, res: Response): Promise<Response> => {
     if (!req.user) {
@@ -54,7 +52,7 @@ class UserService {
 
     req.user.phone = decryptEncryption({ cipherText: req.user.phone });
 
-    const user = await this.userModel.findById({
+    const profile = await this.userModel.findById({
       id: req.user._id as Types.ObjectId,
       select: "email firstName lastName profilePicture friends",
       populate: {
@@ -63,13 +61,20 @@ class UserService {
         match: { freezedAt: { $exists: false } },
       },
     })
-    if (!user) {
+    if (!profile) {
       throw new notFoundException("user not found")
     }
+
+    const groups = await this.chatModel.find({
+      filter: {
+        participants: { $in: req.user?._id },
+        group: { $exists: true }
+      }
+    })
     return successResponse<IUserResponse>({
       res,
       data: {
-        user: user as Partial<HUserDocument>,
+        user: profile, groups,
       },
     });
   };
@@ -357,7 +362,7 @@ class UserService {
 
   logout = async (req: Request, res: Response): Promise<Response> => {
     const flag: LogOutEnum = req.body;
-    let statusCode: number = 200;
+    // let statusCode: number = 200;
     const update: UpdateQuery<IUser> = {};
 
     switch (flag) {
@@ -366,7 +371,7 @@ class UserService {
         break;
       default:
         await createRevokeToken(req.decoded as JwtPayload);
-        statusCode = 201;
+        // statusCode = 201;
         break;
     }
 

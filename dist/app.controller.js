@@ -11,6 +11,7 @@ const cors_1 = __importDefault(require("cors"));
 const modules_1 = require("./modules");
 const error_response_1 = require("./utils/response/error.response");
 const connection_db_1 = require("./db/connection.db");
+const chat_1 = require("./modules/chat");
 const bootstrap = async () => {
     const port = process.env.PORT || 5000;
     const app = (0, express_1.default)();
@@ -24,6 +25,7 @@ const bootstrap = async () => {
     app.use("/auth", modules_1.authRouter);
     app.use("/user", modules_1.userRouter);
     app.use("/post", modules_1.postRouter);
+    app.use("/chat", chat_1.chatRouter);
     app.use(error_response_1.globalErrorHandling);
     const httpServer = app.listen(port, () => {
         console.log(`app running on port ${port}😊`);

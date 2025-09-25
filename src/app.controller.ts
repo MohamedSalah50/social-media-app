@@ -13,6 +13,7 @@ import {
   globalErrorHandling,
 } from "./utils/response/error.response";
 import { connectDb } from "./db/connection.db";
+import { chatRouter } from "./modules/chat";
 
 
 
@@ -39,6 +40,7 @@ const bootstrap = async (): Promise<void> => {
   app.use("/auth", authRouter);
   app.use("/user", userRouter);
   app.use("/post", postRouter);
+  app.use("/chat",chatRouter)
 
   app.use(globalErrorHandling);
 

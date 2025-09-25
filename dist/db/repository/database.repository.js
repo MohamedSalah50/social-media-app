@@ -9,11 +9,31 @@ class DatabaseRepository {
     async create({ data, options, }) {
         return await this.model.create(data, options);
     }
-    async findOne({ filter, select, options, }) {
+    // async findOne({
+    //   filter,
+    //   select,
+    //   options,
+    // }: {
+    //   filter?: RootFilterQuery<TDocument>;
+    //   select?: ProjectionType<TDocument> | null;
+    //   options?: QueryOptions<TDocument> | null;
+    // }): Promise<Lean<TDocument> | HydratedDocument<TDocument> | null> {
+    //   const doc = this.model.findOne(filter).select(select || "");
+    //   if (options?.lean) {
+    //     doc.lean(options.lean);
+    //   }
+    //   return await doc.exec();
+    // }
+    async findOne({ filter, select, options }) {
         const doc = this.model.findOne(filter).select(select || "");
-        if (options?.lean) {
-            doc.lean(options.lean);
+        if (options?.populate) {
+            doc.populate(options?.populate);
         }
+        ;
+        if (options?.lean) {
+            doc.lean(options?.lean);
+        }
+        ;
         return await doc.exec();
     }
     async paginate({ filter, options = {}, select, page = "all", size, }) {
@@ -78,6 +98,21 @@ class DatabaseRepository {
             },
         }, options);
     }
+    //  async findOneAndUpdate({
+    //       filter,
+    //       update,
+    //       options = { new: true }
+    //   }: {
+    //       filter?: RootFilterQuery<TDocument>,
+    //       update?: UpdateQuery<TDocument>,
+    //       options?: QueryOptions<TDocument> | null
+    //   }): Promise<HydratedDocument<TDocument> | Lean<TDocument> | null> {
+    //       return await this.model.findOneAndUpdate(
+    //           filter, {
+    //           ...update,
+    //           $inc: { __v: 1 }
+    //       }, options)
+    //   };
     async deleteOne({ filter }) {
         return await this.model.deleteOne(filter);
     }

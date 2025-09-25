@@ -8,6 +8,7 @@ import { v4 as uuid } from "uuid";
 import { deleteFiles, uploadFiles } from "../../utils/multer/s3.config";
 import { LikePostQueryInputsDto } from "./post.dto";
 import { Types, UpdateQuery } from "mongoose";
+import { connectedSocket, getIO } from "../gateway";
 
 class PostService {
     private userModel = new userRepository(UserModel);
@@ -201,6 +202,11 @@ class PostService {
 
         if (!post) {
             throw new notFoundException("post not found or invalid postId")
+        }
+
+        if (action == likeActionEnum.like) {
+            getIO().to(connectedSocket.get(post.createdBy.toString() as string) as string)
+                .emit("likePost", { postId, userId: req.user?._id })
         }
 
         return successResponse({ res })

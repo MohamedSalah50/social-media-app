@@ -14,8 +14,12 @@ import {
   storageEnum,
 } from "../../utils/multer/cloud.multer";
 import userService from "./user.service";
+import { chatRouter } from "../chat";
 
 const router = Router();
+
+router.use("/:userId/chat", chatRouter)
+
 
 router.delete(
   "{/:userId}/freeze-account",

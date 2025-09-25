@@ -45,7 +45,9 @@ const validation_middleware_1 = require("../../middleware/validation.middleware"
 const token_security_1 = require("../../utils/security/token.security");
 const cloud_multer_1 = require("../../utils/multer/cloud.multer");
 const user_service_2 = __importDefault(require("./user.service"));
+const chat_1 = require("../chat");
 const router = (0, express_1.Router)();
+router.use("/:userId/chat", chat_1.chatRouter);
 router.delete("{/:userId}/freeze-account", (0, authentication_middleware_1.authentication)(), (0, validation_middleware_1.validation)(validators.freezeAccount), user_service_1.default.freezeAccount);
 router.delete("/:userId/hard-delete", (0, authentication_middleware_1.authorization)(user_authorization_1.endpoint.hardDelete), (0, validation_middleware_1.validation)(validators.hardDelete), user_service_1.default.hardDeleteAccount);
 router.patch("/:userId/restore-account", (0, authentication_middleware_1.authorization)(user_authorization_1.endpoint.restoreAccount), user_service_1.default.restoreAccount);

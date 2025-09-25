@@ -18,18 +18,19 @@ const email_event_1 = require("../../utils/events/email.event");
 const repository_1 = require("../../db/repository");
 const post_model_1 = require("../../db/models/post.model");
 const friendRequest_model_1 = require("../../db/models/friendRequest.model");
+const models_1 = require("../../db/models");
 class UserService {
     userModel = new user_repository_1.userRepository(user_model_1.UserModel);
     postModel = new repository_1.PostRepository(post_model_1.PostModel);
+    chatModel = new repository_1.chatRepository(models_1.ChatModel);
     friendRequestModel = new repository_1.FriendRequestRepository(friendRequest_model_1.FriendRequestModel);
-    // private tokenModel = new TokenRepository(TokenModel);
     constructor() { }
     profile = async (req, res) => {
         if (!req.user) {
             throw new error_response_1.UnAuthorizedException("missing user details");
         }
         req.user.phone = (0, encryption_security_1.decryptEncryption)({ cipherText: req.user.phone });
-        const user = await this.userModel.findById({
+        const profile = await this.userModel.findById({
             id: req.user._id,
             select: "email firstName lastName profilePicture friends",
             populate: {
@@ -38,13 +39,19 @@ class UserService {
                 match: { freezedAt: { $exists: false } },
             },
         });
-        if (!user) {
+        if (!profile) {
             throw new error_response_1.notFoundException("user not found");
         }
+        const groups = await this.chatModel.find({
+            filter: {
+                participants: { $in: req.user?._id },
+                group: { $exists: true }
+            }
+        });
         return (0, success_response_1.successResponse)({
             res,
             data: {
-                user: user,
+                user: profile, groups,
             },
         });
     };
@@ -270,7 +277,7 @@ class UserService {
     };
     logout = async (req, res) => {
         const flag = req.body;
-        let statusCode = 200;
+        // let statusCode: number = 200;
         const update = {};
         switch (flag) {
             case token_security_1.LogOutEnum.all:
@@ -278,7 +285,7 @@ class UserService {
                 break;
             default:
                 await (0, token_security_1.createRevokeToken)(req.decoded);
-                statusCode = 201;
+                // statusCode = 201;
                 break;
         }
         await this.userModel.updateOne({ filter: { _id: req.user?._id }, update });

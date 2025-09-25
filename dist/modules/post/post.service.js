@@ -8,6 +8,7 @@ const error_response_1 = require("../../utils/response/error.response");
 const uuid_1 = require("uuid");
 const s3_config_1 = require("../../utils/multer/s3.config");
 const mongoose_1 = require("mongoose");
+const gateway_1 = require("../gateway");
 class PostService {
     userModel = new repository_1.userRepository(user_model_1.UserModel);
     postModel = new repository_1.PostRepository(post_model_1.PostModel);
@@ -165,6 +166,10 @@ class PostService {
         });
         if (!post) {
             throw new error_response_1.notFoundException("post not found or invalid postId");
+        }
+        if (action == post_model_1.likeActionEnum.like) {
+            (0, gateway_1.getIO)().to(gateway_1.connectedSocket.get(post.createdBy.toString()))
+                .emit("likePost", { postId, userId: req.user?._id });
         }
         return (0, success_response_1.successResponse)({ res });
     };
