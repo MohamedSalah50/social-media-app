@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 // import { ILogoutDto } from "./user.dto";
 import { Types, UpdateQuery } from "mongoose";
-import { HUserDocument, IUser, UserModel } from "../../db/models/user.model";
+import { GenderEnum, HUserDocument, UserModel } from "../../db/models/user.model";
 import {
   createLoginCredentials,
   createRevokeToken,
@@ -38,8 +38,30 @@ import { PostModel } from "../../db/models/post.model";
 import { FilterQuery } from "mongoose";
 import { FriendRequestModel } from "../../db/models/friendRequest.model";
 import { ChatModel } from "../../db/models";
+import { GraphQLError } from "graphql";
 
-class UserService {
+
+
+export interface IUser {
+  id: number,
+  name: string,
+  email: string,
+  gender: GenderEnum,
+  password: string,
+  followers: number[]
+}
+
+
+let users: IUser[] = [
+  { id: 1, name: "medo salah", email: "medoamer@example.com", gender: GenderEnum.male, password: "123456", followers: [] },
+  { id: 2, name: "ahmed salah", email: "ahmedsalah@example.com", gender: GenderEnum.male, password: "123456", followers: [] },
+  { id: 3, name: "hema", email: "hemazz15@example.com", gender: GenderEnum.male, password: "123456", followers: [] },
+];
+
+
+
+
+export class UserService {
   private userModel = new userRepository(UserModel);
   private postModel = new PostRepository(PostModel);
   private chatModel = new chatRepository(ChatModel);
@@ -589,6 +611,42 @@ class UserService {
 
   }
 
+
+  welcome = (): string => {
+    return "hello graphql"
+  }
+
+  allUsers = (args: { name: string, gender: GenderEnum }): IUser[] => {
+    return users.filter((ele) => {
+      ele.name === args.name && ele.gender === args.gender
+    })
+  }
+
+  search = (args: { email: string }): { message: string; statusCode: number; data: IUser } => {
+    const user = users.find((ele) => {
+      ele.email === args.email
+    })
+    if (!user) {
+      throw new GraphQLError("fail to find matching result", {
+        extensions: { statusCode: 404 }
+      })
+    }
+    return {
+      message: "success",
+      statusCode: 200,
+      data: user
+    }
+  }
+
+  addFollower = (args: { friendId: number, myId: number }): IUser[] => {
+    users = users.map((ele: IUser): IUser => {
+      if (ele.id === args.friendId) {
+        ele.followers.push(args.myId)
+      }
+      return ele
+    });
+    return users
+  }
 
 }
 

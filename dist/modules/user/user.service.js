@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.UserService = void 0;
 const user_model_1 = require("../../db/models/user.model");
 const token_security_1 = require("../../utils/security/token.security");
 const user_repository_1 = require("../../db/repository/user.repository");
@@ -19,6 +20,12 @@ const repository_1 = require("../../db/repository");
 const post_model_1 = require("../../db/models/post.model");
 const friendRequest_model_1 = require("../../db/models/friendRequest.model");
 const models_1 = require("../../db/models");
+const graphql_1 = require("graphql");
+let users = [
+    { id: 1, name: "medo salah", email: "medoamer@example.com", gender: user_model_1.GenderEnum.male, password: "123456", followers: [] },
+    { id: 2, name: "ahmed salah", email: "ahmedsalah@example.com", gender: user_model_1.GenderEnum.male, password: "123456", followers: [] },
+    { id: 3, name: "hema", email: "hemazz15@example.com", gender: user_model_1.GenderEnum.male, password: "123456", followers: [] },
+];
 class UserService {
     userModel = new user_repository_1.userRepository(user_model_1.UserModel);
     postModel = new repository_1.PostRepository(post_model_1.PostModel);
@@ -435,5 +442,38 @@ class UserService {
         });
         return (0, success_response_1.successResponse)({ res, message: "2fa enabled successfully" });
     };
+    welcome = () => {
+        return "hello graphql";
+    };
+    allUsers = (args) => {
+        return users.filter((ele) => {
+            ele.name === args.name && ele.gender === args.gender;
+        });
+    };
+    search = (args) => {
+        const user = users.find((ele) => {
+            ele.email === args.email;
+        });
+        if (!user) {
+            throw new graphql_1.GraphQLError("fail to find matching result", {
+                extensions: { statusCode: 404 }
+            });
+        }
+        return {
+            message: "success",
+            statusCode: 200,
+            data: user
+        };
+    };
+    addFollower = (args) => {
+        users = users.map((ele) => {
+            if (ele.id === args.friendId) {
+                ele.followers.push(args.myId);
+            }
+            return ele;
+        });
+        return users;
+    };
 }
+exports.UserService = UserService;
 exports.default = new UserService();
