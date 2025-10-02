@@ -1,10 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.twofaEnapleVerify = exports.confirmEmailUpdate = exports.updateEmail = exports.updatePassword = exports.updateBasicInfo = exports.hardDelete = exports.restoreAccount = exports.freezeAccount = exports.logout = void 0;
+exports.twofaEnapleVerify = exports.confirmEmailUpdate = exports.updateEmail = exports.updatePassword = exports.updateBasicInfo = exports.hardDelete = exports.restoreAccount = exports.freezeAccount = exports.logout = exports.welcome = void 0;
 const zod_1 = require("zod");
 const token_security_1 = require("../../utils/security/token.security");
 const mongoose_1 = require("mongoose");
 const validation_middleware_1 = require("../../middleware/validation.middleware");
+exports.welcome = zod_1.z.strictObject({
+    name: zod_1.z.string().min(2)
+});
 exports.logout = {
     body: zod_1.z.strictObject({
         flag: zod_1.z.enum(token_security_1.LogOutEnum).default(token_security_1.LogOutEnum.only),

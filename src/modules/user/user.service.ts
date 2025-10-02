@@ -612,14 +612,12 @@ export class UserService {
   }
 
 
-  welcome = (): string => {
+  welcome = (user: HUserDocument): string => {
     return "hello graphql"
   }
 
-  allUsers = (args: { name: string, gender: GenderEnum }): IUser[] => {
-    return users.filter((ele) => {
-      ele.name === args.name && ele.gender === args.gender
-    })
+  allUsers = async (args: { gender: GenderEnum }, authUser: HUserDocument): Promise<HUserDocument[]> => {
+    return await this.userModel.find({ filter: { _id: { $ne: authUser._id }, gender: args.gender } })
   }
 
   search = (args: { email: string }): { message: string; statusCode: number; data: IUser } => {

@@ -8,7 +8,6 @@ import { BadRequest, notFoundException } from "../../utils/response/error.respon
 
 import { v4 as uuid } from "uuid";
 import { uploadFile } from "../../utils/multer/s3.config";
-import { IAMAuth } from "google-auth-library";
 
 export class ChatService {
     private chatModel = new chatRepository(ChatModel);

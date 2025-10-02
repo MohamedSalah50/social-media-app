@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express"
 import z, { ZodError, ZodType } from "zod"
 import { GenderEnum } from "../db/models/user.model";
 import { Types } from "mongoose";
+import { GraphQLError } from "graphql";
 
 type KeyType = keyof Request; // "body" || "params" || "query" || "headers"
 type SchemaType = Partial<Record<KeyType, ZodType>>
@@ -36,6 +37,26 @@ export const validation = (schema: SchemaType) => {
         return next() as unknown as NextFunction
     }
 }
+
+
+export const graphValidation = async <T = any>(schema: ZodType, args: T) => {
+    const validationResult = await schema.safeParseAsync(args);
+    if (!validationResult.success) {
+        const ZError = validationResult.error as ZodError;
+        throw new GraphQLError("validation Error", {
+            extensions: {
+                statusCode: 400,
+                issues: {
+                    key: "args",
+                    issues: ZError.issues.map((issue) => {
+                        return { path: issue.path, message: issue.message };
+                    }),
+                },
+            },
+        });
+    }
+};
+
 
 
 export const generalFields = {

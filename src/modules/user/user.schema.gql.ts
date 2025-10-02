@@ -1,13 +1,6 @@
-import { GenderEnum } from "../../db/models";
 import * as gqlTypes from "./user.types.gql";
 import * as gqlArgs from "./user.args.gql";
 import { UserResolver } from "./user.resolver";
-
-
-
-
-
-
 
 
 class UserGqlSchema {
@@ -17,6 +10,14 @@ class UserGqlSchema {
 
     registerQuery = () => {
         return {
+
+            welcome: {
+                type: gqlTypes.welcome,
+                args: gqlArgs.welcome,
+                description: "this filed return our server welcome message",
+                resolve: this.userResolver.welcome
+            },
+
             allUsers: {
                 type: gqlTypes.allUsers,
                 args: gqlArgs.allUsers,

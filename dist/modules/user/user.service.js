@@ -442,13 +442,11 @@ class UserService {
         });
         return (0, success_response_1.successResponse)({ res, message: "2fa enabled successfully" });
     };
-    welcome = () => {
+    welcome = (user) => {
         return "hello graphql";
     };
-    allUsers = (args) => {
-        return users.filter((ele) => {
-            ele.name === args.name && ele.gender === args.gender;
-        });
+    allUsers = async (args, authUser) => {
+        return await this.userModel.find({ filter: { _id: { $ne: authUser._id }, gender: args.gender } });
     };
     search = (args) => {
         const user = users.find((ele) => {

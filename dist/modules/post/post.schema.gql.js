@@ -33,40 +33,29 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-const gqlTypes = __importStar(require("./user.types.gql"));
-const gqlArgs = __importStar(require("./user.args.gql"));
-const user_resolver_1 = require("./user.resolver");
-class UserGqlSchema {
+const post_resolver_1 = require("./post.resolver");
+const gqlArgs = __importStar(require("./post.args.gql"));
+const gqlTypes = __importStar(require("./post.types.gql"));
+class PostGqlSchema {
     constructor() { }
-    userResolver = new user_resolver_1.UserResolver();
+    postResolver = new post_resolver_1.PostResolver();
     registerQuery = () => {
         return {
-            welcome: {
-                type: gqlTypes.welcome,
-                args: gqlArgs.welcome,
-                description: "this filed return our server welcome message",
-                resolve: this.userResolver.welcome
-            },
-            allUsers: {
-                type: gqlTypes.allUsers,
-                args: gqlArgs.allUsers,
-                resolve: this.userResolver.allUsers
-            },
-            searchUser: {
-                type: gqlTypes.searchUser,
-                args: gqlArgs.searchUser,
-                resolve: this.userResolver.search
+            allPosts: {
+                type: gqlTypes.allPosts,
+                args: gqlArgs.allPosts,
+                resolve: this.postResolver.allPosts
             }
         };
     };
     registerMutation = () => {
         return {
-            addFollower: {
-                type: gqlTypes.addFollower,
-                args: gqlArgs.addFollower,
-                resolve: this.userResolver.addFollower
+            likePost: {
+                type: gqlTypes.GraphQlOnePostResponse,
+                args: gqlArgs.likePost,
+                resolve: this.postResolver.likePost
             }
         };
     };
 }
-exports.default = new UserGqlSchema();
+exports.default = new PostGqlSchema();

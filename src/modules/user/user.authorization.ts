@@ -2,6 +2,7 @@ import { RoleEnum } from "../../utils/security/token.security";
 
 export const endpoint = {
   profile: [RoleEnum.user, RoleEnum.admin],
+  welcome: [RoleEnum.user, RoleEnum.admin],
   restoreAccount: [RoleEnum.admin],
   hardDelete: [RoleEnum.admin],
   dashboard: [RoleEnum.admin, RoleEnum.superAdmin]

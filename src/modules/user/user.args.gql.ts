@@ -2,8 +2,11 @@ import { GraphQLNonNull, GraphQLString } from "graphql";
 import { GraphQlGenderEnum } from "./user.types.gql";
 
 
+export const welcome = {
+    name: { type: new GraphQLNonNull(GraphQLString) }
+}
+
 export const allUsers = {
-    name: { type: new GraphQLNonNull(GraphQLString) },
     gender: { type: GraphQlGenderEnum }
 }
 

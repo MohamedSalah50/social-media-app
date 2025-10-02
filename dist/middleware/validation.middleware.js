@@ -3,10 +3,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generalFields = exports.validation = void 0;
+exports.generalFields = exports.graphValidation = exports.validation = void 0;
 const zod_1 = __importDefault(require("zod"));
 const user_model_1 = require("../db/models/user.model");
 const mongoose_1 = require("mongoose");
+const graphql_1 = require("graphql");
 const validation = (schema) => {
     return (req, res, next) => {
         // const errors: { key: KeyType, issues: { path: string | number | symbol | undefined, message: string }[] }[] = [];
@@ -37,6 +38,24 @@ const validation = (schema) => {
     };
 };
 exports.validation = validation;
+const graphValidation = async (schema, args) => {
+    const validationResult = await schema.safeParseAsync(args);
+    if (!validationResult.success) {
+        const ZError = validationResult.error;
+        throw new graphql_1.GraphQLError("validation Error", {
+            extensions: {
+                statusCode: 400,
+                issues: {
+                    key: "args",
+                    issues: ZError.issues.map((issue) => {
+                        return { path: issue.path, message: issue.message };
+                    }),
+                },
+            },
+        });
+    }
+};
+exports.graphValidation = graphValidation;
 exports.generalFields = {
     username: zod_1.default.string().min(2, { message: "username must be at least 2 characters long" }).max(20),
     email: zod_1.default.email(),

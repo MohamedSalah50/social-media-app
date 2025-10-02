@@ -16,6 +16,7 @@ import { connectDb } from "./db/connection.db";
 import { chatRouter } from "./modules/chat";
 import { createHandler } from "graphql-http/lib/use/express";
 import { schema } from "./modules/graphql/schema.gql";
+import { authentication } from "./middleware/authentication.middleware";
 
 
 
@@ -34,7 +35,12 @@ const bootstrap = async (): Promise<void> => {
   await connectDb();
 
 
-  app.all("/graphql", createHandler({schema:schema}))
+  app.all("/graphql",
+    authentication(),
+    createHandler({
+      schema: schema,
+      context: (req) => ({ user: req.raw.user })
+    }));
 
   app.get("/", (req: Request, res: Response, next: NextFunction) => {
     return res.status(200).json({ message: "welcome to social app ♥" });

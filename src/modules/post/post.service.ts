@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { successResponse } from "../../utils/response/success.response";
 import { PostRepository, userRepository } from "../../db/repository";
-import { UserModel } from "../../db/models/user.model";
+import { HUserDocument, UserModel } from "../../db/models/user.model";
 import { AvailabilityEnum, HPostDocument, likeActionEnum, PostModel } from "../../db/models/post.model";
 import { BadRequest, notFoundException } from "../../utils/response/error.response";
 import { v4 as uuid } from "uuid";
@@ -9,8 +9,34 @@ import { deleteFiles, uploadFiles } from "../../utils/multer/s3.config";
 import { LikePostQueryInputsDto } from "./post.dto";
 import { Types, UpdateQuery } from "mongoose";
 import { connectedSocket, getIO } from "../gateway";
+import { GraphQLError } from "graphql";
 
-class PostService {
+
+
+export const postAvailability = (user: HUserDocument) => {
+    return [
+        {
+            availability: AvailabilityEnum.public,
+        },
+        {
+            availability: AvailabilityEnum.onlyMe,
+            createdBy: user?._id,
+        },
+        {
+            availability: AvailabilityEnum.friends,
+            createdBy: { $in: [...(user.friends || []), user?._id] },
+        },
+        {
+            availability: { $ne: AvailabilityEnum.onlyMe },
+            tags: { $in: user?._id },
+        },
+    ];
+};
+
+
+
+
+export class PostService {
     private userModel = new userRepository(UserModel);
     private postModel = new PostRepository(PostModel);
     constructor() { }
@@ -261,6 +287,64 @@ class PostService {
 
 
         return successResponse({ res })
+    }
+
+
+
+    //gql
+
+    allPosts = async ({ page, size }: { page: number, size: number }, authUser: HUserDocument): Promise<{ docsCount?: number, limit?: number, page?: number, currentPage?: number | undefined, result: HPostDocument[] }> => {
+
+        const posts = await this.postModel.paginate({
+            filter: {
+                $or: postAvailability(authUser)
+            },
+            options: {
+                populate: [{
+                    path: "comments",
+                    match: {
+                        commentId: { $exists: false },
+                        freezedAt: { $exists: false }
+                    },
+                    populate: [{
+                        path: "reply",
+                        match: { freezedAt: { $exists: false } },
+                        justOne: true
+                    }]
+                }]
+            },
+            page,
+            size,
+        })
+
+        return posts;
+    }
+
+
+    likeGraphQlPost = async ({ postId, action }:
+        { postId: string, action: likeActionEnum }, authUser: HUserDocument): Promise<HPostDocument> => {
+
+        let update: UpdateQuery<HPostDocument> = { $addToSet: { likes: authUser._id } }
+
+        if (action === likeActionEnum.unlike) {
+            update = { $pull: { likes: authUser._id } }
+        }
+
+        const post = await this.postModel.findOneAndUpdate({
+            filter: { _id: postId, $or: postAvailability(authUser) },
+            update,
+        })
+
+        if (!post) {
+            throw new GraphQLError("post not found or invalid postId", { extensions: { statusCode: 404 } })
+        }
+
+        if (action == likeActionEnum.like) {
+            getIO().to(connectedSocket.get(post.createdBy.toString() as string) as string)
+                .emit("likePost", { postId, userId: authUser._id })
+        }
+
+        return post
     }
 
 }

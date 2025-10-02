@@ -3,6 +3,11 @@ import { LogOutEnum } from "../../utils/security/token.security";
 import { Types } from "mongoose";
 import { generalFields } from "../../middleware/validation.middleware";
 
+
+export const welcome = z.strictObject({
+  name: z.string().min(2)
+})
+
 export const logout = {
   body: z.strictObject({
     flag: z.enum(LogOutEnum).default(LogOutEnum.only),
