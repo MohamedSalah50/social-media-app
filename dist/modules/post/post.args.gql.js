@@ -8,7 +8,7 @@ exports.allPosts = {
     size: { type: new graphql_1.GraphQLNonNull(graphql_1.GraphQLInt) },
 };
 exports.likePost = {
-    postId: { type: new graphql_1.GraphQLNonNull(graphql_1.GraphQLInt) },
+    postId: { type: new graphql_1.GraphQLNonNull(graphql_1.GraphQLID) },
     action: {
         type: new graphql_1.GraphQLNonNull(new graphql_1.GraphQLEnumType({
             name: "likePostAction",

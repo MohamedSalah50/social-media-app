@@ -28,6 +28,17 @@ export class ChatEvents {
     }
 
 
+    typing = (socket: IAuthSocket, io: Server) => {
+    return socket.on("typing", (data: { sendTo: string }) => {
+        try {
+            this.chatService.typing({ data, socket });
+        } catch (error) {
+            socket.emit("custom_error", error);
+        }
+    });
+};
+
+
 
     sendGroupMessage = (socket: IAuthSocket, io: Server) => {
         return socket.on("sendGroupMessage", (data: { groupId: string, content: string }) => {

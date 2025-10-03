@@ -28,7 +28,7 @@ class ChatService {
         if (!chat) {
             throw new error_response_1.notFoundException("chat not found");
         }
-        return (0, success_response_1.successResponse)({ res, data: chat });
+        return (0, success_response_1.successResponse)({ res, data: { chat } });
     };
     getChattingGroup = async (req, res) => {
         const { groupId } = req.params;
@@ -129,6 +129,26 @@ class ChatService {
         socket.emit("successMessage", { content });
         socket.to(gateway_interface_1.connectedSocket.get(sendTo))
             .emit("newMessage", { content, from: socket.credentials?.user });
+    };
+    typing = async ({ data, socket }) => {
+        const { sendTo } = data;
+        const senderId = socket.credentials?.user?._id?.toString();
+        const user = await this.userModel.findOne({
+            filter: {
+                _id: mongoose_1.Types.ObjectId.createFromHexString(sendTo),
+                friends: { $in: new mongoose_1.Types.ObjectId(senderId) }
+            }
+        });
+        if (!user) {
+            socket.emit("custom_error", { message: "user not in your friend list" });
+            return;
+        }
+        const receiverSocketId = gateway_interface_1.connectedSocket.get(sendTo);
+        if (receiverSocketId) {
+            socket.to(receiverSocketId).emit("userTyping", {
+                from: socket.credentials?.user,
+            });
+        }
     };
     sendGroupMessage = async ({ data, socket }) => {
         const { groupId, content } = data;

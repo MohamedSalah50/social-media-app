@@ -27,6 +27,16 @@ class ChatEvents {
             }
         });
     };
+    typing = (socket, io) => {
+        return socket.on("typing", (data) => {
+            try {
+                this.chatService.typing({ data, socket });
+            }
+            catch (error) {
+                socket.emit("custom_error", error);
+            }
+        });
+    };
     sendGroupMessage = (socket, io) => {
         return socket.on("sendGroupMessage", (data) => {
             try {

@@ -38,7 +38,7 @@ export class ChatService {
         }
 
 
-        return successResponse({ res, data: chat })
+        return successResponse({ res, data: { chat } })
 
     }
 
@@ -182,6 +182,32 @@ export class ChatService {
 
 
     }
+
+    typing = async ({ data, socket }: { data: { sendTo: string }, socket: IAuthSocket }) => {
+        const { sendTo } = data;
+        const senderId = socket.credentials?.user?._id?.toString();
+
+        const user = await this.userModel.findOne({
+            filter: {
+                _id: Types.ObjectId.createFromHexString(sendTo),
+                friends: { $in: new Types.ObjectId(senderId) }
+            }
+        });
+
+        if (!user) {
+            socket.emit("custom_error", { message: "user not in your friend list" });
+            return;
+        }
+
+        const receiverSocketId = connectedSocket.get(sendTo);
+
+        if (receiverSocketId) {
+            socket.to(receiverSocketId).emit("userTyping", {
+                from: socket.credentials?.user, 
+            });
+        }
+    };
+
 
 
     sendGroupMessage = async ({ data, socket }: { data: { groupId: string, content: string }, socket: IAuthSocket }) => {

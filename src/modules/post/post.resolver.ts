@@ -1,4 +1,4 @@
-import { HPostDocument, HUserDocument, likeActionEnum } from "../../db/models";
+import { HPostDocument, likeActionEnum } from "../../db/models";
 import { IAuthGraph } from "../graphql/schema.interface";
 import { PostService } from "./post.service";
 

@@ -35,17 +35,20 @@ const initio = async (httpServer) => {
         socket.on("disconnect", () => {
             const removedUserId = socket.credentials?.user?._id?.toString();
             gateway_interface_1.connectedSocket.delete(removedUserId);
+            // console.log(`❌ User disconnected: ${removedUserId}`);
             exports.io?.emit("offlineUser", removedUserId);
         });
     }
     exports.io.on("connection", (socket) => {
         try {
-            console.log(socket.id);
+            const userId = socket.credentials?.user?._id?.toString();
+            // console.log(`✅ User connected: ${userId}, Socket ID: ${socket.id}`);
             chatGateway.register(socket, (0, exports.getIO)());
+            exports.io?.emit("onlineUser", userId);
             disconnect(socket);
         }
         catch (error) {
-            console.log("fail");
+            console.log("❌ Connection failed:", error);
         }
     });
 };

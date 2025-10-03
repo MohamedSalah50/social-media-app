@@ -13,6 +13,7 @@ class ChatGateway {
             this.chatEvents.sendMessage(socket, io);
             this.chatEvents.joinRoom(socket, io);
             this.chatEvents.sendGroupMessage(socket, io);
+            this.chatEvents.typing(socket, io);
         }
         catch (error) {
             socket.emit("custom_error", error);

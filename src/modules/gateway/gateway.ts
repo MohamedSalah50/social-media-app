@@ -38,20 +38,32 @@ export const initio = async (httpServer: HttpServer) => {
     function disconnect(socket: IAuthSocket) {
         socket.on("disconnect", () => {
             const removedUserId = socket.credentials?.user?._id?.toString() as string;
+
             connectedSocket.delete(removedUserId);
-            io?.emit("offlineUser", removedUserId)
-        })
+
+            // console.log(`❌ User disconnected: ${removedUserId}`);
+
+            io?.emit("offlineUser", removedUserId);
+        });
     }
 
     io.on("connection", (socket: IAuthSocket) => {
         try {
-            console.log(socket.id);
+            const userId = socket.credentials?.user?._id?.toString();
+
+            // console.log(`✅ User connected: ${userId}, Socket ID: ${socket.id}`);
+
             chatGateway.register(socket, getIO());
+
+            io?.emit("onlineUser", userId);
+
             disconnect(socket);
         } catch (error) {
-            console.log("fail");
+            console.log("❌ Connection failed:", error);
         }
     });
+
+
 
 }
 

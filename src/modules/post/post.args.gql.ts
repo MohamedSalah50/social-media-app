@@ -1,4 +1,4 @@
-import { GraphQLEnumType, GraphQLInt, GraphQLNonNull } from "graphql";
+import { GraphQLEnumType, GraphQLID, GraphQLInt, GraphQLNonNull } from "graphql";
 import { likeActionEnum } from "../../db/models";
 
 
@@ -8,7 +8,7 @@ export const allPosts = {
 }
 
 export const likePost = {
-    postId: { type: new GraphQLNonNull(GraphQLInt) },
+    postId: { type: new GraphQLNonNull(GraphQLID) },
     action: {
         type: new GraphQLNonNull(new GraphQLEnumType({
             name: "likePostAction",
@@ -19,3 +19,4 @@ export const likePost = {
         }))
     }
 }
+
