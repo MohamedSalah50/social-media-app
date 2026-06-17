@@ -18,6 +18,13 @@ A full-featured **Social Media Platform** REST API built with **Express.js** and
 | OAuth | Google OAuth2 |
 | Encryption | bcrypt + AES |
 
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
+![Express.js](https://img.shields.io/badge/Express.js-000000?style=flat&logo=express&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=flat&logo=mongodb&logoColor=white)
+![Socket.io](https://img.shields.io/badge/Socket.io-010101?style=flat&logo=socketdotio&logoColor=white)
+![GraphQL](https://img.shields.io/badge/GraphQL-E10098?style=flat&logo=graphql&logoColor=white)
+![AWS](https://img.shields.io/badge/AWS_S3-FF9900?style=flat&logo=amazons3&logoColor=white)
+
 ---
 
 ## 📁 Project Structure
@@ -226,6 +233,10 @@ ENCRYPTION_KEY=
 ## 🏃 Running the App
 
 ```bash
+# Clone the repository
+git clone https://github.com/MohamedSalah50/social-media-app.git
+cd social-media-app
+
 npm install
 npm run dev    # Development
 npm run build
@@ -241,3 +252,10 @@ npm start      # Production
 - Phone numbers AES-encrypted at rest, decrypted on read
 - Logout supports single session (revoke token) or all devices (`changeCredentialsTime`)
 - Generic `DatabaseRepository<T>` base class used across all repositories
+
+
+## 📬 Postman Collection
+
+> Test all endpoints with the published collection:
+
+[![Postman](https://img.shields.io/badge/Postman-Collection-FF6C37?style=flat&logo=postman&logoColor=white)](https://documenter.getpostman.com/view/42944447/2sB3BKGUPs)
