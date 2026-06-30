@@ -17,6 +17,7 @@ A full-featured **Social Media Platform** REST API built with **Express.js** and
 | Email | Nodemailer + Event Emitter |
 | OAuth | Google OAuth2 |
 | Encryption | bcrypt + AES |
+| Containerization | Docker + Docker Compose |
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
 ![Express.js](https://img.shields.io/badge/Express.js-000000?style=flat&logo=express&logoColor=white)
@@ -24,6 +25,7 @@ A full-featured **Social Media Platform** REST API built with **Express.js** and
 ![Socket.io](https://img.shields.io/badge/Socket.io-010101?style=flat&logo=socketdotio&logoColor=white)
 ![GraphQL](https://img.shields.io/badge/GraphQL-E10098?style=flat&logo=graphql&logoColor=white)
 ![AWS](https://img.shields.io/badge/AWS_S3-FF9900?style=flat&logo=amazons3&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)
 
 ---
 
@@ -241,6 +243,16 @@ npm install
 npm run dev    # Development
 npm run build
 npm start      # Production
+
+```
+### 🐳 Docker
+
+```bash
+# Development
+docker-compose -f docker-compose-dev.yaml up
+
+# Production
+docker-compose -f docker-compose-prod.yaml up -d
 ```
 
 ---
