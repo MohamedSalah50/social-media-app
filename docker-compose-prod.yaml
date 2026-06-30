@@ -1,0 +1,12 @@
+version: '5.1.4'
+
+services:
+  social-app-prod:
+    build:
+      context: .
+      target: prod
+    container_name: social-app-prod-con
+    env_file:
+      - ./config/.env.prod  
+    ports:
+      - "4001:3000"
